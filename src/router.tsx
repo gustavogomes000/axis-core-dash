@@ -21,6 +21,9 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    defaultPreload: "intent",
+    defaultPendingMs: 200,
+    defaultPendingMinMs: 0,
   });
 
   return router;
