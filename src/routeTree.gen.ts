@@ -29,12 +29,15 @@ import { Route as AuthFactoringContasPagarRouteImport } from './routes/_auth/fac
 import { Route as AuthFactoringConfiguracoesRouteImport } from './routes/_auth/factoring/configuracoes'
 import { Route as AuthFactoringClientesRouteImport } from './routes/_auth/factoring/clientes'
 import { Route as AuthEmporioVendasRouteImport } from './routes/_auth/emporio/vendas'
+import { Route as AuthEmporioUsuariosRouteImport } from './routes/_auth/emporio/usuarios'
 import { Route as AuthEmporioRelatorioRouteImport } from './routes/_auth/emporio/relatorio'
 import { Route as AuthEmporioProdutosRouteImport } from './routes/_auth/emporio/produtos'
 import { Route as AuthEmporioFluxoCaixaRouteImport } from './routes/_auth/emporio/fluxo-caixa'
+import { Route as AuthEmporioEntregasRouteImport } from './routes/_auth/emporio/entregas'
 import { Route as AuthEmporioContasReceberRouteImport } from './routes/_auth/emporio/contas-receber'
 import { Route as AuthEmporioContasPagarRouteImport } from './routes/_auth/emporio/contas-pagar'
 import { Route as AuthEmporioConfiguracoesRouteImport } from './routes/_auth/emporio/configuracoes'
+import { Route as AuthEmporioComissoesRouteImport } from './routes/_auth/emporio/comissoes'
 import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
 import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
 
@@ -141,6 +144,11 @@ const AuthEmporioVendasRoute = AuthEmporioVendasRouteImport.update({
   path: '/vendas',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
+const AuthEmporioUsuariosRoute = AuthEmporioUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 const AuthEmporioRelatorioRoute = AuthEmporioRelatorioRouteImport.update({
   id: '/relatorio',
   path: '/relatorio',
@@ -154,6 +162,11 @@ const AuthEmporioProdutosRoute = AuthEmporioProdutosRouteImport.update({
 const AuthEmporioFluxoCaixaRoute = AuthEmporioFluxoCaixaRouteImport.update({
   id: '/fluxo-caixa',
   path: '/fluxo-caixa',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthEmporioEntregasRoute = AuthEmporioEntregasRouteImport.update({
+  id: '/entregas',
+  path: '/entregas',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
 const AuthEmporioContasReceberRoute =
@@ -173,6 +186,11 @@ const AuthEmporioConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthEmporioRoute,
   } as any)
+const AuthEmporioComissoesRoute = AuthEmporioComissoesRouteImport.update({
+  id: '/comissoes',
+  path: '/comissoes',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 const AuthEmporioClientesRoute = AuthEmporioClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -195,12 +213,15 @@ export interface FileRoutesByFullPath {
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/emporio/comissoes': typeof AuthEmporioComissoesRoute
   '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
   '/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
   '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/relatorio': typeof AuthEmporioRelatorioRoute
+  '/emporio/usuarios': typeof AuthEmporioUsuariosRoute
   '/emporio/vendas': typeof AuthEmporioVendasRoute
   '/factoring/clientes': typeof AuthFactoringClientesRoute
   '/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
@@ -222,12 +243,15 @@ export interface FileRoutesByTo {
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/emporio/comissoes': typeof AuthEmporioComissoesRoute
   '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
   '/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
   '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/relatorio': typeof AuthEmporioRelatorioRoute
+  '/emporio/usuarios': typeof AuthEmporioUsuariosRoute
   '/emporio/vendas': typeof AuthEmporioVendasRoute
   '/factoring/clientes': typeof AuthFactoringClientesRoute
   '/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
@@ -253,12 +277,15 @@ export interface FileRoutesById {
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/_auth/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/_auth/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/_auth/emporio/comissoes': typeof AuthEmporioComissoesRoute
   '/_auth/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
   '/_auth/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
   '/_auth/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/_auth/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/_auth/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/_auth/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/_auth/emporio/relatorio': typeof AuthEmporioRelatorioRoute
+  '/_auth/emporio/usuarios': typeof AuthEmporioUsuariosRoute
   '/_auth/emporio/vendas': typeof AuthEmporioVendasRoute
   '/_auth/factoring/clientes': typeof AuthFactoringClientesRoute
   '/_auth/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
@@ -284,12 +311,15 @@ export interface FileRouteTypes {
     | '/catalogo/$slug'
     | '/emporio/catalogo'
     | '/emporio/clientes'
+    | '/emporio/comissoes'
     | '/emporio/configuracoes'
     | '/emporio/contas-pagar'
     | '/emporio/contas-receber'
+    | '/emporio/entregas'
     | '/emporio/fluxo-caixa'
     | '/emporio/produtos'
     | '/emporio/relatorio'
+    | '/emporio/usuarios'
     | '/emporio/vendas'
     | '/factoring/clientes'
     | '/factoring/configuracoes'
@@ -311,12 +341,15 @@ export interface FileRouteTypes {
     | '/catalogo/$slug'
     | '/emporio/catalogo'
     | '/emporio/clientes'
+    | '/emporio/comissoes'
     | '/emporio/configuracoes'
     | '/emporio/contas-pagar'
     | '/emporio/contas-receber'
+    | '/emporio/entregas'
     | '/emporio/fluxo-caixa'
     | '/emporio/produtos'
     | '/emporio/relatorio'
+    | '/emporio/usuarios'
     | '/emporio/vendas'
     | '/factoring/clientes'
     | '/factoring/configuracoes'
@@ -341,12 +374,15 @@ export interface FileRouteTypes {
     | '/catalogo/$slug'
     | '/_auth/emporio/catalogo'
     | '/_auth/emporio/clientes'
+    | '/_auth/emporio/comissoes'
     | '/_auth/emporio/configuracoes'
     | '/_auth/emporio/contas-pagar'
     | '/_auth/emporio/contas-receber'
+    | '/_auth/emporio/entregas'
     | '/_auth/emporio/fluxo-caixa'
     | '/_auth/emporio/produtos'
     | '/_auth/emporio/relatorio'
+    | '/_auth/emporio/usuarios'
     | '/_auth/emporio/vendas'
     | '/_auth/factoring/clientes'
     | '/_auth/factoring/configuracoes'
@@ -512,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioVendasRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/emporio/usuarios': {
+      id: '/_auth/emporio/usuarios'
+      path: '/usuarios'
+      fullPath: '/emporio/usuarios'
+      preLoaderRoute: typeof AuthEmporioUsuariosRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
     '/_auth/emporio/relatorio': {
       id: '/_auth/emporio/relatorio'
       path: '/relatorio'
@@ -531,6 +574,13 @@ declare module '@tanstack/react-router' {
       path: '/fluxo-caixa'
       fullPath: '/emporio/fluxo-caixa'
       preLoaderRoute: typeof AuthEmporioFluxoCaixaRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/entregas': {
+      id: '/_auth/emporio/entregas'
+      path: '/entregas'
+      fullPath: '/emporio/entregas'
+      preLoaderRoute: typeof AuthEmporioEntregasRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
     '/_auth/emporio/contas-receber': {
@@ -554,6 +604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioConfiguracoesRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/emporio/comissoes': {
+      id: '/_auth/emporio/comissoes'
+      path: '/comissoes'
+      fullPath: '/emporio/comissoes'
+      preLoaderRoute: typeof AuthEmporioComissoesRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
     '/_auth/emporio/clientes': {
       id: '/_auth/emporio/clientes'
       path: '/clientes'
@@ -574,12 +631,15 @@ declare module '@tanstack/react-router' {
 interface AuthEmporioRouteChildren {
   AuthEmporioCatalogoRoute: typeof AuthEmporioCatalogoRoute
   AuthEmporioClientesRoute: typeof AuthEmporioClientesRoute
+  AuthEmporioComissoesRoute: typeof AuthEmporioComissoesRoute
   AuthEmporioConfiguracoesRoute: typeof AuthEmporioConfiguracoesRoute
   AuthEmporioContasPagarRoute: typeof AuthEmporioContasPagarRoute
   AuthEmporioContasReceberRoute: typeof AuthEmporioContasReceberRoute
+  AuthEmporioEntregasRoute: typeof AuthEmporioEntregasRoute
   AuthEmporioFluxoCaixaRoute: typeof AuthEmporioFluxoCaixaRoute
   AuthEmporioProdutosRoute: typeof AuthEmporioProdutosRoute
   AuthEmporioRelatorioRoute: typeof AuthEmporioRelatorioRoute
+  AuthEmporioUsuariosRoute: typeof AuthEmporioUsuariosRoute
   AuthEmporioVendasRoute: typeof AuthEmporioVendasRoute
   AuthEmporioIndexRoute: typeof AuthEmporioIndexRoute
 }
@@ -587,12 +647,15 @@ interface AuthEmporioRouteChildren {
 const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
   AuthEmporioCatalogoRoute: AuthEmporioCatalogoRoute,
   AuthEmporioClientesRoute: AuthEmporioClientesRoute,
+  AuthEmporioComissoesRoute: AuthEmporioComissoesRoute,
   AuthEmporioConfiguracoesRoute: AuthEmporioConfiguracoesRoute,
   AuthEmporioContasPagarRoute: AuthEmporioContasPagarRoute,
   AuthEmporioContasReceberRoute: AuthEmporioContasReceberRoute,
+  AuthEmporioEntregasRoute: AuthEmporioEntregasRoute,
   AuthEmporioFluxoCaixaRoute: AuthEmporioFluxoCaixaRoute,
   AuthEmporioProdutosRoute: AuthEmporioProdutosRoute,
   AuthEmporioRelatorioRoute: AuthEmporioRelatorioRoute,
+  AuthEmporioUsuariosRoute: AuthEmporioUsuariosRoute,
   AuthEmporioVendasRoute: AuthEmporioVendasRoute,
   AuthEmporioIndexRoute: AuthEmporioIndexRoute,
 }
