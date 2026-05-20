@@ -10,7 +10,7 @@ export function useList<T = any>(table: string, key: string, select = "*", order
     queryKey: [key, empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      let q = supabase.from(table).select(select).eq("empresa_id", empresaId!);
+      let q: any = (supabase as any).from(table).select(select).eq("empresa_id", empresaId!);
       if (order) q = q.order(order.column, { ascending: order.ascending ?? false });
       const { data, error } = await q;
       if (error) throw error;
@@ -25,7 +25,7 @@ export function useUpsert(table: string, invalidate: string[]) {
   return useMutation({
     mutationFn: async (payload: any) => {
       const row = { ...payload, empresa_id: empresaAtiva?.id };
-      const { error } = await supabase.from(table).upsert(row);
+      const { error } = await (supabase as any).from(table).upsert(row);
       if (error) throw error;
     },
     onSuccess: () => { invalidate.forEach((k) => qc.invalidateQueries({ queryKey: [k] })); toast.success("Salvo"); },
@@ -37,7 +37,7 @@ export function useDelete(table: string, invalidate: string[]) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(table).delete().eq("id", id);
+      const { error } = await (supabase as any).from(table).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { invalidate.forEach((k) => qc.invalidateQueries({ queryKey: [k] })); toast.success("Excluído"); },
