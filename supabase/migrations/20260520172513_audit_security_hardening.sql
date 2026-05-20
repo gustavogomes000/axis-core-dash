@@ -69,3 +69,11 @@ GRANT  EXECUTE ON FUNCTION public.generate_numero_contrato(uuid) TO authenticate
 
 REVOKE EXECUTE ON FUNCTION public.has_empresa_access(uuid) FROM anon, public;
 GRANT  EXECUTE ON FUNCTION public.has_empresa_access(uuid) TO authenticated;
+
+-- 4. Column-level: anon nunca enxerga preco_custo direto na tabela produtos
+REVOKE SELECT ON public.produtos FROM anon;
+GRANT SELECT (
+  id, empresa_id, categoria_id, fornecedor_id, sku, nome, descricao, descricao_curta,
+  preco, estoque, estoque_minimo, unidade, peso, dimensoes, imagens, tags,
+  destaque, disponivel_catalogo, status, created_at, updated_at
+) ON public.produtos TO anon;
