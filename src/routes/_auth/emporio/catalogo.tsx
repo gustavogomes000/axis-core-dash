@@ -110,6 +110,9 @@ function Page() {
               <div className="text-xs text-muted-foreground mt-1">
                 {countProdutos ?? 0} produto(s) disponíveis no catálogo
               </div>
+              <div className="text-xs text-amber-600 mt-2">
+                ⚠️ Este link só fica público após <strong>publicar</strong> o projeto. No ambiente de preview, exige login do Lovable.
+              </div>
             </div>
             <div className="flex gap-2 shrink-0">
               <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(url); toast.success("Link copiado"); }}>
