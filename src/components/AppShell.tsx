@@ -15,11 +15,17 @@ export interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export function AppShell({ items, groupLabel, children }: { items: NavItem[]; groupLabel: string; children: React.ReactNode }) {
+export interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+export function AppShell({ items, groups, groupLabel, children }: { items?: NavItem[]; groups?: NavGroup[]; groupLabel: string; children: React.ReactNode }) {
+  const resolvedGroups: NavGroup[] = groups ?? [{ label: groupLabel, items: items ?? [] }];
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-muted/30">
-        <ModuleSidebar items={items} groupLabel={groupLabel} />
+        <ModuleSidebar groups={resolvedGroups} />
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
           <main className="flex-1 p-6 overflow-auto">{children}</main>
@@ -30,7 +36,7 @@ export function AppShell({ items, groupLabel, children }: { items: NavItem[]; gr
   );
 }
 
-function ModuleSidebar({ items, groupLabel }: { items: NavItem[]; groupLabel: string }) {
+function ModuleSidebar({ groups }: { groups: NavGroup[] }) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
@@ -57,26 +63,29 @@ function ModuleSidebar({ items, groupLabel }: { items: NavItem[]; groupLabel: st
             )}
           </div>
         </div>
-        <SidebarGroup>
-          <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((it) => {
-                const active = path === it.url || path.startsWith(it.url + "/");
-                return (
-                  <SidebarMenuItem key={it.url}>
-                    <SidebarMenuButton asChild isActive={active}>
-                      <Link to={it.url} className="flex items-center gap-2">
-                        <it.icon className="h-4 w-4" />
-                        {!collapsed && <span>{it.title}</span>}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groups.map((g) => (
+          <SidebarGroup key={g.label}>
+            <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {g.items.map((it) => {
+                  const active = path === it.url || (it.url !== "/factoring" && it.url !== "/emporio" && path.startsWith(it.url + "/"));
+                  const exact = path === it.url;
+                  return (
+                    <SidebarMenuItem key={it.url}>
+                      <SidebarMenuButton asChild isActive={active || exact}>
+                        <Link to={it.url} className="flex items-center gap-2">
+                          <it.icon className="h-4 w-4" />
+                          {!collapsed && <span>{it.title}</span>}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );

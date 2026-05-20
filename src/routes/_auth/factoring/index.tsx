@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { StatCard } from "@/components/StatCard";
 import { formatarMoeda, formatarData } from "@/lib/format";
-import { FileText, AlertTriangle, Wallet, Users, Plus, Calculator, ArrowRight } from "lucide-react";
+import { FileText, AlertTriangle, Wallet, Users, Plus, Calculator, ArrowRight, ListChecks, FileMinus, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +68,39 @@ function Dashboard() {
         <StatCard label="Parcelas em atraso" value={data?.atrasadasQtd ?? 0} icon={AlertTriangle} tone="destructive" />
         <StatCard label="Clientes" value={data?.clientes ?? 0} icon={Users} tone="muted" />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Fluxo de operação</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ol className="grid gap-3 md:grid-cols-4">
+            {[
+              { n: 1, label: "Simular", desc: "Calcule taxa, prazo e parcelas", to: "/factoring/simulador", icon: Calculator },
+              { n: 2, label: "Cadastrar cliente", desc: "Dados, score e referências", to: "/factoring/clientes", icon: Users },
+              { n: 3, label: "Criar empréstimo", desc: "Contrato e parcelas geradas", to: "/factoring/emprestimos", icon: FileText },
+              { n: 4, label: "Cobrar e baixar", desc: "Receber e tratar atrasos", to: "/factoring/parcelas", icon: ListChecks },
+            ].map((s) => (
+              <Link key={s.n} to={s.to} className="group rounded-lg border bg-card p-3 hover:border-primary/60 hover:shadow-sm transition">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="h-6 w-6 grid place-items-center rounded-full bg-primary/10 text-primary text-xs font-semibold">{s.n}</span>
+                  <s.icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{s.label}</span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-auto opacity-0 group-hover:opacity-100 transition" />
+                </div>
+                <p className="text-xs text-muted-foreground">{s.desc}</p>
+              </Link>
+            ))}
+          </ol>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <Link to="/factoring/inadimplentes" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><AlertTriangle className="h-3 w-3" /> Inadimplentes</Link>
+            <span className="text-muted-foreground/40">·</span>
+            <Link to="/factoring/contas-pagar" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><FileMinus className="h-3 w-3" /> Contas a pagar</Link>
+            <span className="text-muted-foreground/40">·</span>
+            <Link to="/factoring/relatorio" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><BarChart3 className="h-3 w-3" /> Relatório</Link>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
