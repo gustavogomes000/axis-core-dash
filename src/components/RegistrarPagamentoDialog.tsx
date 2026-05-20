@@ -44,7 +44,8 @@ export function RegistrarPagamentoDialog({ open, onOpenChange, modo, tabela, reg
 
   useEffect(() => {
     if (open && registro) {
-      setValor(Number(registro.valor ?? 0));
+      const saldoCalc = Math.max(0, Number(registro.valor ?? 0) - Number(registro.valor_pago ?? 0));
+      setValor(saldoCalc);
       setData(new Date().toISOString().slice(0, 10));
       setTipo("pix");
     }
