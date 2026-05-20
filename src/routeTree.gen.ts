@@ -19,6 +19,14 @@ import { Route as AuthFactoringRouteImport } from './routes/_auth/factoring'
 import { Route as AuthEmporioRouteImport } from './routes/_auth/emporio'
 import { Route as AuthFactoringIndexRouteImport } from './routes/_auth/factoring/index'
 import { Route as AuthEmporioIndexRouteImport } from './routes/_auth/emporio/index'
+import { Route as AuthEmporioVendasRouteImport } from './routes/_auth/emporio/vendas'
+import { Route as AuthEmporioProdutosRouteImport } from './routes/_auth/emporio/produtos'
+import { Route as AuthEmporioFluxoCaixaRouteImport } from './routes/_auth/emporio/fluxo-caixa'
+import { Route as AuthEmporioContasReceberRouteImport } from './routes/_auth/emporio/contas-receber'
+import { Route as AuthEmporioContasPagarRouteImport } from './routes/_auth/emporio/contas-pagar'
+import { Route as AuthEmporioConfiguracoesRouteImport } from './routes/_auth/emporio/configuracoes'
+import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
+import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
 
 const SelecionarEmpresaRoute = SelecionarEmpresaRouteImport.update({
   id: '/selecionar-empresa',
@@ -69,6 +77,48 @@ const AuthEmporioIndexRoute = AuthEmporioIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
+const AuthEmporioVendasRoute = AuthEmporioVendasRouteImport.update({
+  id: '/vendas',
+  path: '/vendas',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthEmporioProdutosRoute = AuthEmporioProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthEmporioFluxoCaixaRoute = AuthEmporioFluxoCaixaRouteImport.update({
+  id: '/fluxo-caixa',
+  path: '/fluxo-caixa',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthEmporioContasReceberRoute =
+  AuthEmporioContasReceberRouteImport.update({
+    id: '/contas-receber',
+    path: '/contas-receber',
+    getParentRoute: () => AuthEmporioRoute,
+  } as any)
+const AuthEmporioContasPagarRoute = AuthEmporioContasPagarRouteImport.update({
+  id: '/contas-pagar',
+  path: '/contas-pagar',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthEmporioConfiguracoesRoute =
+  AuthEmporioConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthEmporioRoute,
+  } as any)
+const AuthEmporioClientesRoute = AuthEmporioClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthEmporioCatalogoRoute = AuthEmporioCatalogoRouteImport.update({
+  id: '/catalogo',
+  path: '/catalogo',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -78,6 +128,14 @@ export interface FileRoutesByFullPath {
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
   '/emporio': typeof AuthEmporioRouteWithChildren
   '/factoring': typeof AuthFactoringRouteWithChildren
+  '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
+  '/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
+  '/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
+  '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
+  '/emporio/produtos': typeof AuthEmporioProdutosRoute
+  '/emporio/vendas': typeof AuthEmporioVendasRoute
   '/emporio/': typeof AuthEmporioIndexRoute
   '/factoring/': typeof AuthFactoringIndexRoute
 }
@@ -87,6 +145,14 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
+  '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
+  '/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
+  '/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
+  '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
+  '/emporio/produtos': typeof AuthEmporioProdutosRoute
+  '/emporio/vendas': typeof AuthEmporioVendasRoute
   '/emporio': typeof AuthEmporioIndexRoute
   '/factoring': typeof AuthFactoringIndexRoute
 }
@@ -100,6 +166,14 @@ export interface FileRoutesById {
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
   '/_auth/emporio': typeof AuthEmporioRouteWithChildren
   '/_auth/factoring': typeof AuthFactoringRouteWithChildren
+  '/_auth/emporio/catalogo': typeof AuthEmporioCatalogoRoute
+  '/_auth/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/_auth/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
+  '/_auth/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
+  '/_auth/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/_auth/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
+  '/_auth/emporio/produtos': typeof AuthEmporioProdutosRoute
+  '/_auth/emporio/vendas': typeof AuthEmporioVendasRoute
   '/_auth/emporio/': typeof AuthEmporioIndexRoute
   '/_auth/factoring/': typeof AuthFactoringIndexRoute
 }
@@ -113,6 +187,14 @@ export interface FileRouteTypes {
     | '/selecionar-empresa'
     | '/emporio'
     | '/factoring'
+    | '/emporio/catalogo'
+    | '/emporio/clientes'
+    | '/emporio/configuracoes'
+    | '/emporio/contas-pagar'
+    | '/emporio/contas-receber'
+    | '/emporio/fluxo-caixa'
+    | '/emporio/produtos'
+    | '/emporio/vendas'
     | '/emporio/'
     | '/factoring/'
   fileRoutesByTo: FileRoutesByTo
@@ -122,6 +204,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/selecionar-empresa'
+    | '/emporio/catalogo'
+    | '/emporio/clientes'
+    | '/emporio/configuracoes'
+    | '/emporio/contas-pagar'
+    | '/emporio/contas-receber'
+    | '/emporio/fluxo-caixa'
+    | '/emporio/produtos'
+    | '/emporio/vendas'
     | '/emporio'
     | '/factoring'
   id:
@@ -134,6 +224,14 @@ export interface FileRouteTypes {
     | '/selecionar-empresa'
     | '/_auth/emporio'
     | '/_auth/factoring'
+    | '/_auth/emporio/catalogo'
+    | '/_auth/emporio/clientes'
+    | '/_auth/emporio/configuracoes'
+    | '/_auth/emporio/contas-pagar'
+    | '/_auth/emporio/contas-receber'
+    | '/_auth/emporio/fluxo-caixa'
+    | '/_auth/emporio/produtos'
+    | '/_auth/emporio/vendas'
     | '/_auth/emporio/'
     | '/_auth/factoring/'
   fileRoutesById: FileRoutesById
@@ -219,14 +317,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioIndexRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/emporio/vendas': {
+      id: '/_auth/emporio/vendas'
+      path: '/vendas'
+      fullPath: '/emporio/vendas'
+      preLoaderRoute: typeof AuthEmporioVendasRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/produtos': {
+      id: '/_auth/emporio/produtos'
+      path: '/produtos'
+      fullPath: '/emporio/produtos'
+      preLoaderRoute: typeof AuthEmporioProdutosRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/fluxo-caixa': {
+      id: '/_auth/emporio/fluxo-caixa'
+      path: '/fluxo-caixa'
+      fullPath: '/emporio/fluxo-caixa'
+      preLoaderRoute: typeof AuthEmporioFluxoCaixaRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/contas-receber': {
+      id: '/_auth/emporio/contas-receber'
+      path: '/contas-receber'
+      fullPath: '/emporio/contas-receber'
+      preLoaderRoute: typeof AuthEmporioContasReceberRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/contas-pagar': {
+      id: '/_auth/emporio/contas-pagar'
+      path: '/contas-pagar'
+      fullPath: '/emporio/contas-pagar'
+      preLoaderRoute: typeof AuthEmporioContasPagarRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/configuracoes': {
+      id: '/_auth/emporio/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/emporio/configuracoes'
+      preLoaderRoute: typeof AuthEmporioConfiguracoesRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/clientes': {
+      id: '/_auth/emporio/clientes'
+      path: '/clientes'
+      fullPath: '/emporio/clientes'
+      preLoaderRoute: typeof AuthEmporioClientesRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/catalogo': {
+      id: '/_auth/emporio/catalogo'
+      path: '/catalogo'
+      fullPath: '/emporio/catalogo'
+      preLoaderRoute: typeof AuthEmporioCatalogoRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
   }
 }
 
 interface AuthEmporioRouteChildren {
+  AuthEmporioCatalogoRoute: typeof AuthEmporioCatalogoRoute
+  AuthEmporioClientesRoute: typeof AuthEmporioClientesRoute
+  AuthEmporioConfiguracoesRoute: typeof AuthEmporioConfiguracoesRoute
+  AuthEmporioContasPagarRoute: typeof AuthEmporioContasPagarRoute
+  AuthEmporioContasReceberRoute: typeof AuthEmporioContasReceberRoute
+  AuthEmporioFluxoCaixaRoute: typeof AuthEmporioFluxoCaixaRoute
+  AuthEmporioProdutosRoute: typeof AuthEmporioProdutosRoute
+  AuthEmporioVendasRoute: typeof AuthEmporioVendasRoute
   AuthEmporioIndexRoute: typeof AuthEmporioIndexRoute
 }
 
 const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
+  AuthEmporioCatalogoRoute: AuthEmporioCatalogoRoute,
+  AuthEmporioClientesRoute: AuthEmporioClientesRoute,
+  AuthEmporioConfiguracoesRoute: AuthEmporioConfiguracoesRoute,
+  AuthEmporioContasPagarRoute: AuthEmporioContasPagarRoute,
+  AuthEmporioContasReceberRoute: AuthEmporioContasReceberRoute,
+  AuthEmporioFluxoCaixaRoute: AuthEmporioFluxoCaixaRoute,
+  AuthEmporioProdutosRoute: AuthEmporioProdutosRoute,
+  AuthEmporioVendasRoute: AuthEmporioVendasRoute,
   AuthEmporioIndexRoute: AuthEmporioIndexRoute,
 }
 
