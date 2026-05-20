@@ -2,25 +2,32 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { AppShell, type NavItem } from "@/components/AppShell";
-import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3, Truck, Trophy, UserCog } from "lucide-react";
+import { useRole, type Perms } from "@/hooks/useRole";
 
-const items: NavItem[] = [
-  { title: "Dashboard", url: "/emporio", icon: LayoutDashboard },
-  { title: "Produtos", url: "/emporio/produtos", icon: Package },
+type Item = NavItem & { needs?: keyof Perms };
+
+const ALL_ITEMS: Item[] = [
+  { title: "Início", url: "/emporio", icon: LayoutDashboard },
+  { title: "Vendas e orçamentos", url: "/emporio/vendas", icon: ShoppingCart, needs: "venderProdutos" },
+  { title: "Entregas", url: "/emporio/entregas", icon: Truck, needs: "gerirEntrega" },
+  { title: "Produtos", url: "/emporio/produtos", icon: Package, needs: "editarProduto" },
   { title: "Clientes", url: "/emporio/clientes", icon: Users },
-  { title: "Vendas", url: "/emporio/vendas", icon: ShoppingCart },
-  { title: "Fluxo de Caixa", url: "/emporio/fluxo-caixa", icon: Wallet },
-  { title: "Contas a Pagar", url: "/emporio/contas-pagar", icon: FileMinus },
-  { title: "Contas a Receber", url: "/emporio/contas-receber", icon: FilePlus },
   { title: "Catálogo", url: "/emporio/catalogo", icon: BookOpen },
-  { title: "Relatório", url: "/emporio/relatorio", icon: BarChart3 },
-  { title: "Configurações", url: "/emporio/configuracoes", icon: Settings },
+  { title: "Entradas e saídas", url: "/emporio/fluxo-caixa", icon: Wallet, needs: "verFinanceiro" },
+  { title: "A receber", url: "/emporio/contas-receber", icon: FilePlus, needs: "verFinanceiro" },
+  { title: "A pagar", url: "/emporio/contas-pagar", icon: FileMinus, needs: "verFinanceiro" },
+  { title: "Comissões", url: "/emporio/comissoes", icon: Trophy, needs: "verComissaoPropria" },
+  { title: "Relatório", url: "/emporio/relatorio", icon: BarChart3, needs: "verRelatorioDono" },
+  { title: "Usuários", url: "/emporio/usuarios", icon: UserCog, needs: "gerirUsuarios" },
+  { title: "Configurações", url: "/emporio/configuracoes", icon: Settings, needs: "config" },
 ];
 
 export const Route = createFileRoute("/_auth/emporio")({ component: Layout });
 
 function Layout() {
   const { empresaAtiva, empresas, setEmpresaAtiva } = useEmpresa();
+  const role = useRole();
   const nav = useNavigate();
   useEffect(() => {
     if (!empresaAtiva) {
@@ -32,6 +39,7 @@ function Layout() {
       if (e) setEmpresaAtiva(e);
     }
   }, [empresaAtiva, empresas, nav, setEmpresaAtiva]);
+  const items: NavItem[] = ALL_ITEMS.filter((it) => !it.needs || role[it.needs]);
   return (
     <AppShell items={items} groupLabel="Empório dos Móveis">
       <Outlet />
