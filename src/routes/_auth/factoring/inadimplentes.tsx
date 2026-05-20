@@ -49,7 +49,7 @@ function Page() {
       const tel = p.emprestimos?.clientes_factoring?.telefone ?? null;
       const k = (p.emprestimos?.clientes_factoring?.nome ?? p.cliente_id) as string;
       const dia = diasAtraso(p.data_vencimento);
-      const cur = map.get(k) ?? { nome, telefone: tel, parcelas: [], total: 0, pior: 0 };
+      const cur = map.get(k) ?? { nome, telefone: tel, parcelas: [] as any[], total: 0, pior: 0 };
       cur.parcelas.push(p); cur.total += Number(p.valor); cur.pior = Math.max(cur.pior, dia);
       map.set(k, cur);
     }
