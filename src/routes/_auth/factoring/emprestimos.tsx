@@ -10,13 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatarMoeda, formatarData } from "@/lib/format";
 import { calcularParcelaPrice } from "@/lib/finance";
 import { gerarTabelaAmortizacao } from "@/lib/finance";
 import { toast } from "sonner";
 import { RoleGate } from "@/components/RoleGate";
+import { AcoesEmprestimoDialog } from "@/components/AcoesEmprestimoDialog";
 
 export const Route = createFileRoute("/_auth/factoring/emprestimos")({ component: Page });
 
@@ -43,6 +44,7 @@ function Page() {
   });
 
   const [open, setOpen] = useState(false);
+  const [acoesEmp, setAcoesEmp] = useState<any | null>(null);
   const [f, setF] = useState({ cliente_id: "", valor_principal: 5000, taxa_juros: 5, prazo_meses: 12, valor_entrada: 0, data_primeiro_vencimento: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) });
 
   const create = useMutation({
@@ -140,10 +142,10 @@ function Page() {
       } />
       <div className="bg-card rounded-lg border">
         <Table>
-          <TableHeader><TableRow><TableHead>Contrato</TableHead><TableHead>Cliente</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Principal</TableHead><TableHead className="text-right">Saldo</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Contrato</TableHead><TableHead>Cliente</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Principal</TableHead><TableHead className="text-right">Saldo</TableHead><TableHead className="w-20" /></TableRow></TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Sem empréstimos</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Sem empréstimos</TableCell></TableRow>}
             {data.map((e: any) => (
               <TableRow key={e.id}>
                 <TableCell className="font-mono">{e.numero_contrato}</TableCell>
@@ -152,11 +154,19 @@ function Page() {
                 <TableCell><Badge variant={e.status === "ativo" ? "default" : e.status === "quitado" ? "secondary" : "outline"}>{e.status}</Badge></TableCell>
                 <TableCell className="text-right">{formatarMoeda(e.valor_principal)}</TableCell>
                 <TableCell className="text-right font-medium">{formatarMoeda(e.saldo_devedor)}</TableCell>
+                <TableCell className="text-right">
+                  {e.status === "ativo" && (
+                    <Button size="icon" variant="ghost" title="Liquidar ou renegociar" onClick={() => setAcoesEmp(e)}>
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+      <AcoesEmprestimoDialog open={!!acoesEmp} onOpenChange={(v) => !v && setAcoesEmp(null)} emprestimo={acoesEmp} />
     </div>
   );
 }
