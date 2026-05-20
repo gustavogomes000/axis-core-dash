@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_auth/emporio/produtos")({ component: Page });
 
-const VAZIO = { id: "" as string | undefined, nome: "", sku: "", preco: 0, preco_custo: 0, estoque: 0, estoque_minimo: 0, descricao_curta: "", disponivel_catalogo: true, destaque: false };
+const VAZIO = { id: "" as string | undefined, nome: "", sku: "", preco: 0, preco_custo: 0, estoque: 0, estoque_minimo: 0, descricao_curta: "", disponivel_catalogo: true, destaque: false, imagem_url: "" };
 
 function Page() {
   const { data = [], isLoading } = useList<any>("produtos", "produtos", "*", { column: "nome", ascending: true });
@@ -29,12 +29,13 @@ function Page() {
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState<typeof VAZIO>(VAZIO);
 
-  const editar = (p: any) => { setForm({ id: p.id, nome: p.nome, sku: p.sku ?? "", preco: Number(p.preco ?? 0), preco_custo: Number(p.preco_custo ?? 0), estoque: Number(p.estoque ?? 0), estoque_minimo: Number(p.estoque_minimo ?? 0), descricao_curta: p.descricao_curta ?? "", disponivel_catalogo: p.disponivel_catalogo ?? true, destaque: p.destaque ?? false }); setOpen(true); };
+  const editar = (p: any) => { setForm({ id: p.id, nome: p.nome, sku: p.sku ?? "", preco: Number(p.preco ?? 0), preco_custo: Number(p.preco_custo ?? 0), estoque: Number(p.estoque ?? 0), estoque_minimo: Number(p.estoque_minimo ?? 0), descricao_curta: p.descricao_curta ?? "", disponivel_catalogo: p.disponivel_catalogo ?? true, destaque: p.destaque ?? false, imagem_url: Array.isArray(p.imagens) && p.imagens.length ? String(p.imagens[0]) : "" }); setOpen(true); };
   const novo = () => { setForm(VAZIO); setOpen(true); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: any = { ...form };
+    const { imagem_url, ...rest } = form as any;
+    const payload: any = { ...rest, imagens: imagem_url ? [imagem_url] : [] };
     if (!payload.id) delete payload.id;
     await upsert.mutateAsync(payload);
     setOpen(false); setForm(VAZIO);
@@ -99,6 +100,11 @@ function Page() {
               <div className="space-y-2"><Label>Estoque mín.</Label><Input type="number" value={form.estoque_minimo} onChange={(e) => setForm({ ...form, estoque_minimo: +e.target.value })} /></div>
             </div>
             <div className="space-y-2"><Label>Descrição curta (catálogo)</Label><Input value={form.descricao_curta} onChange={(e) => setForm({ ...form, descricao_curta: e.target.value })} placeholder="Ex.: Sofá retrátil, tecido suede" /></div>
+            <div className="space-y-2">
+              <Label>Foto do produto (URL)</Label>
+              <Input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." />
+              {form.imagem_url && <img src={form.imagem_url} alt="Pré-visualização" className="mt-2 h-24 w-24 object-cover rounded border" />}
+            </div>
             <div className="flex flex-wrap gap-6 pt-1">
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={form.disponivel_catalogo} onCheckedChange={(v) => setForm({ ...form, disponivel_catalogo: v })} />
