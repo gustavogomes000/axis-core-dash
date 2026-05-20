@@ -8,15 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Pencil, Search, Upload } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Upload, Eye, EyeOff, Star } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ImportarCSVDialog } from "@/components/ImportarCSVDialog";
 import { formatarMoeda } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_auth/emporio/produtos")({ component: Page });
 
-const VAZIO = { id: "" as string | undefined, nome: "", sku: "", preco: 0, preco_custo: 0, estoque: 0, estoque_minimo: 0 };
+const VAZIO = { id: "" as string | undefined, nome: "", sku: "", preco: 0, preco_custo: 0, estoque: 0, estoque_minimo: 0, descricao_curta: "", disponivel_catalogo: true, destaque: false };
 
 function Page() {
   const { data = [], isLoading } = useList<any>("produtos", "produtos", "*", { column: "nome", ascending: true });
@@ -28,7 +29,7 @@ function Page() {
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState<typeof VAZIO>(VAZIO);
 
-  const editar = (p: any) => { setForm({ id: p.id, nome: p.nome, sku: p.sku ?? "", preco: Number(p.preco ?? 0), preco_custo: Number(p.preco_custo ?? 0), estoque: Number(p.estoque ?? 0), estoque_minimo: Number(p.estoque_minimo ?? 0) }); setOpen(true); };
+  const editar = (p: any) => { setForm({ id: p.id, nome: p.nome, sku: p.sku ?? "", preco: Number(p.preco ?? 0), preco_custo: Number(p.preco_custo ?? 0), estoque: Number(p.estoque ?? 0), estoque_minimo: Number(p.estoque_minimo ?? 0), descricao_curta: p.descricao_curta ?? "", disponivel_catalogo: p.disponivel_catalogo ?? true, destaque: p.destaque ?? false }); setOpen(true); };
   const novo = () => { setForm(VAZIO); setOpen(true); };
 
   const submit = async (e: React.FormEvent) => {
@@ -74,6 +75,8 @@ function Page() {
                 <TableCell>{p.estoque <= p.estoque_minimo ? <Badge variant="destructive">Baixo</Badge> : <Badge variant="secondary">OK</Badge>}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    {p.destaque && <Star className="h-4 w-4 text-amber-500 self-center" aria-label="Destaque" />}
+                    {p.disponivel_catalogo ? <Eye className="h-4 w-4 text-muted-foreground self-center" aria-label="No catálogo" /> : <EyeOff className="h-4 w-4 text-muted-foreground/50 self-center" aria-label="Oculto" />}
                     <Button variant="ghost" size="icon" onClick={() => editar(p)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => setDelId(p.id)} aria-label="Excluir"><Trash2 className="h-4 w-4" /></Button>
                   </div>
@@ -94,6 +97,17 @@ function Page() {
               <div className="space-y-2"><Label>Preço *</Label><Input type="number" step="0.01" required value={form.preco} onChange={(e) => setForm({ ...form, preco: +e.target.value })} /></div>
               <div className="space-y-2"><Label>Custo</Label><Input type="number" step="0.01" value={form.preco_custo} onChange={(e) => setForm({ ...form, preco_custo: +e.target.value })} /></div>
               <div className="space-y-2"><Label>Estoque mín.</Label><Input type="number" value={form.estoque_minimo} onChange={(e) => setForm({ ...form, estoque_minimo: +e.target.value })} /></div>
+            </div>
+            <div className="space-y-2"><Label>Descrição curta (catálogo)</Label><Input value={form.descricao_curta} onChange={(e) => setForm({ ...form, descricao_curta: e.target.value })} placeholder="Ex.: Sofá retrátil, tecido suede" /></div>
+            <div className="flex flex-wrap gap-6 pt-1">
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.disponivel_catalogo} onCheckedChange={(v) => setForm({ ...form, disponivel_catalogo: v })} />
+                Disponível no catálogo público
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.destaque} onCheckedChange={(v) => setForm({ ...form, destaque: v })} />
+                Destacar no topo
+              </label>
             </div>
             <DialogFooter><Button type="submit" disabled={upsert.isPending}>Salvar</Button></DialogFooter>
           </form>

@@ -13,9 +13,16 @@ function Page() {
   const { data, isLoading } = useQuery({
     queryKey: ["catalogo", slug],
     queryFn: async () => {
-      const { data: cfg } = await supabase.from("config_catalogo").select("*").eq("slug", slug).maybeSingle();
+      const { data: cfg } = await supabase.from("config_catalogo").select("*").eq("slug", slug).eq("ativo", true).maybeSingle();
       if (!cfg) return null;
-      const { data: produtos } = await (supabase as any).from("catalogo_produtos").select("*").eq("empresa_id", cfg.empresa_id).order("destaque", { ascending: false }).order("nome");
+      const { data: produtos } = await supabase
+        .from("produtos")
+        .select("id, nome, descricao_curta, preco, estoque, imagens, destaque, disponivel_catalogo, status")
+        .eq("empresa_id", cfg.empresa_id)
+        .eq("disponivel_catalogo", true)
+        .eq("status", "ativo")
+        .order("destaque", { ascending: false })
+        .order("nome");
       return { cfg, produtos: produtos ?? [] };
     },
   });
