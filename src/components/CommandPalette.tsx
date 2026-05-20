@@ -63,10 +63,13 @@ export function CommandPalette() {
       const tipo = empresaAtiva?.tipo;
       const out: { label: string; sub: string; to: string }[] = [];
       if (tipo !== "factoring") {
+        const numero = /^\d+$/.test(debounced) ? Number(debounced) : null;
         const [clientes, produtos, vendas] = await Promise.all([
           supabase.from("clientes_emporio").select("id, nome, telefone").eq("empresa_id", empresaId!).ilike("nome", like).limit(5),
           supabase.from("produtos").select("id, nome, sku").eq("empresa_id", empresaId!).or(`nome.ilike.${like},sku.ilike.${like}`).limit(5),
-          supabase.from("vendas").select("id, numero_venda, total, clientes_emporio(nome)").eq("empresa_id", empresaId!).ilike("numero_venda::text", like).limit(5),
+          numero != null
+            ? supabase.from("vendas").select("id, numero_venda, total, clientes_emporio(nome)").eq("empresa_id", empresaId!).eq("numero_venda", numero).limit(5)
+            : Promise.resolve({ data: [] as any[] }),
         ]);
         clientes.data?.forEach((c: any) => out.push({ label: c.nome, sub: `Cliente · ${c.telefone ?? ""}`, to: "/emporio/clientes" }));
         produtos.data?.forEach((p: any) => out.push({ label: p.nome, sub: `Produto · ${p.sku ?? ""}`, to: "/emporio/produtos" }));
