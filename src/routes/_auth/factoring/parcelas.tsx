@@ -40,6 +40,17 @@ function Page() {
         status: "pago", valor_pago: valor, data_pagamento, dias_atraso: dias, multa, juros_mora: mora,
       } as any).eq("id", pay.id);
       if (error) throw error;
+      // Lançamento de caixa: entrada
+      await supabase.from("movimentacoes_caixa").insert({
+        empresa_id: pay.empresa_id,
+        tipo: "entrada",
+        categoria: "emprestimo_recebimento",
+        descricao: `Parcela ${pay.numero_parcela}/${pay.total_parcelas} — ${pay.emprestimos?.numero_contrato ?? ""}`,
+        valor,
+        referencia_tipo: "parcela_emprestimo",
+        referencia_id: pay.id,
+        data_movimentacao: data_pagamento,
+      } as any);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["parcelas-emp"] }); setPay(null); toast.success("Pagamento registrado"); },
     onError: (e: any) => toast.error(e.message),

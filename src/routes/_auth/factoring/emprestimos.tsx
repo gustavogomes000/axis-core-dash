@@ -14,6 +14,7 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatarMoeda, formatarData } from "@/lib/format";
 import { calcularParcelaPrice } from "@/lib/finance";
+import { gerarTabelaAmortizacao } from "@/lib/finance";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/factoring/emprestimos")({ component: Page });
@@ -45,11 +46,12 @@ function Page() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const valor_parcela = calcularParcelaPrice(f.valor_principal - f.valor_entrada, f.taxa_juros, f.prazo_meses);
+      const principalFinanciado = f.valor_principal - f.valor_entrada;
+      const valor_parcela = calcularParcelaPrice(principalFinanciado, f.taxa_juros, f.prazo_meses);
       const total_pagar = valor_parcela * f.prazo_meses + f.valor_entrada;
       const total_juros = total_pagar - f.valor_principal;
       const { data: contrato } = await supabase.rpc("generate_numero_contrato", { p_empresa_id: empresaId! });
-      const { error } = await supabase.from("emprestimos").insert({
+      const { data: emp, error } = await supabase.from("emprestimos").insert({
         empresa_id: empresaId!,
         cliente_id: f.cliente_id,
         numero_contrato: contrato as any,
@@ -61,13 +63,49 @@ function Page() {
         valor_parcela,
         total_pagar,
         total_juros,
-        saldo_devedor: f.valor_principal - f.valor_entrada,
+        saldo_devedor: principalFinanciado,
         data_primeiro_vencimento: f.data_primeiro_vencimento,
+        data_liberacao: new Date().toISOString().slice(0, 10),
         status: "ativo",
-      } as any);
+      } as any).select("id").single();
       if (error) throw error;
+
+      // Gera parcelas via tabela Price
+      const tabela = gerarTabelaAmortizacao(principalFinanciado, f.taxa_juros, f.prazo_meses, f.data_primeiro_vencimento);
+      const parcelasRows = tabela.map((p) => ({
+        empresa_id: empresaId!,
+        emprestimo_id: emp!.id,
+        cliente_id: f.cliente_id,
+        numero_parcela: p.numero,
+        total_parcelas: f.prazo_meses,
+        valor: p.valor,
+        valor_principal: p.amortizacao,
+        valor_juros: p.juros,
+        saldo_devedor_antes: p.saldoAntes,
+        saldo_devedor_apos: p.saldoApos,
+        data_vencimento: p.vencimento,
+        status: "pendente",
+      }));
+      const { error: errP } = await supabase.from("parcelas_emprestimo").insert(parcelasRows as any);
+      if (errP) throw errP;
+
+      // Lançamento de caixa: liberação (saída)
+      await supabase.from("movimentacoes_caixa").insert({
+        empresa_id: empresaId!,
+        tipo: "saida",
+        categoria: "emprestimo_liberacao",
+        descricao: `Liberação contrato ${contrato}`,
+        valor: principalFinanciado,
+        referencia_tipo: "emprestimo",
+        referencia_id: emp!.id,
+      } as any);
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["emprestimos"] }); setOpen(false); toast.success("Empréstimo criado"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["emprestimos"] });
+      qc.invalidateQueries({ queryKey: ["parcelas-emp"] });
+      setOpen(false);
+      toast.success("Empréstimo criado e parcelas geradas");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
