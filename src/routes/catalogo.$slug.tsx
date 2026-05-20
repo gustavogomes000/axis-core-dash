@@ -15,7 +15,7 @@ function Page() {
     queryFn: async () => {
       const { data: cfg } = await supabase.from("config_catalogo").select("*").eq("slug", slug).maybeSingle();
       if (!cfg) return null;
-      const { data: produtos } = await supabase.from("produtos").select("*").eq("empresa_id", cfg.empresa_id).eq("disponivel_catalogo", true).eq("status", "ativo").order("destaque", { ascending: false }).order("nome");
+      const { data: produtos } = await (supabase as any).from("catalogo_produtos").select("*").eq("empresa_id", cfg.empresa_id).order("destaque", { ascending: false }).order("nome");
       return { cfg, produtos: produtos ?? [] };
     },
   });
