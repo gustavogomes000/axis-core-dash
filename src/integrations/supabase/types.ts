@@ -336,6 +336,8 @@ export type Database = {
       }
       config_emporio: {
         Row: {
+          comissao_padrao_pct: number
+          desconto_max_sem_aprovacao: number
           dias_vencimento_padrao: number
           empresa_id: string
           id: string
@@ -349,6 +351,8 @@ export type Database = {
           whatsapp_padrao: string | null
         }
         Insert: {
+          comissao_padrao_pct?: number
+          desconto_max_sem_aprovacao?: number
           dias_vencimento_padrao?: number
           empresa_id: string
           id?: string
@@ -362,6 +366,8 @@ export type Database = {
           whatsapp_padrao?: string | null
         }
         Update: {
+          comissao_padrao_pct?: number
+          desconto_max_sem_aprovacao?: number
           dias_vencimento_padrao?: number
           empresa_id?: string
           id?: string
@@ -853,6 +859,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      metas_vendedor: {
+        Row: {
+          comissao_pct: number
+          created_at: string
+          empresa_id: string
+          id: string
+          mes: string
+          meta_valor: number
+          updated_at: string
+          vendedor_id: string
+        }
+        Insert: {
+          comissao_pct?: number
+          created_at?: string
+          empresa_id: string
+          id?: string
+          mes: string
+          meta_valor?: number
+          updated_at?: string
+          vendedor_id: string
+        }
+        Update: {
+          comissao_pct?: number
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          mes?: string
+          meta_valor?: number
+          updated_at?: string
+          vendedor_id?: string
+        }
+        Relationships: []
       }
       movimentacoes_caixa: {
         Row: {
@@ -1353,6 +1392,8 @@ export type Database = {
       vendas: {
         Row: {
           cliente_id: string | null
+          comissao_pct: number
+          comissao_valor: number
           created_at: string
           data_entrega: string | null
           desconto: number
@@ -1362,15 +1403,19 @@ export type Database = {
           observacoes: string | null
           parcelas: number
           status: Database["public"]["Enums"]["status_venda"]
+          status_entrega: Database["public"]["Enums"]["status_entrega"]
           subtotal: number
           tipo_pagamento: Database["public"]["Enums"]["tipo_pagamento"] | null
           total: number
           updated_at: string
           usuario_id: string | null
           valor_entrada: number
+          vendedor_id: string | null
         }
         Insert: {
           cliente_id?: string | null
+          comissao_pct?: number
+          comissao_valor?: number
           created_at?: string
           data_entrega?: string | null
           desconto?: number
@@ -1380,15 +1425,19 @@ export type Database = {
           observacoes?: string | null
           parcelas?: number
           status?: Database["public"]["Enums"]["status_venda"]
+          status_entrega?: Database["public"]["Enums"]["status_entrega"]
           subtotal?: number
           tipo_pagamento?: Database["public"]["Enums"]["tipo_pagamento"] | null
           total?: number
           updated_at?: string
           usuario_id?: string | null
           valor_entrada?: number
+          vendedor_id?: string | null
         }
         Update: {
           cliente_id?: string | null
+          comissao_pct?: number
+          comissao_valor?: number
           created_at?: string
           data_entrega?: string | null
           desconto?: number
@@ -1398,12 +1447,14 @@ export type Database = {
           observacoes?: string | null
           parcelas?: number
           status?: Database["public"]["Enums"]["status_venda"]
+          status_entrega?: Database["public"]["Enums"]["status_entrega"]
           subtotal?: number
           tipo_pagamento?: Database["public"]["Enums"]["tipo_pagamento"] | null
           total?: number
           updated_at?: string
           usuario_id?: string | null
           valor_entrada?: number
+          vendedor_id?: string | null
         }
         Relationships: [
           {
@@ -1452,7 +1503,14 @@ export type Database = {
         | "imposto"
         | "servico"
         | "outros"
-      papel_usuario: "admin" | "gerente" | "operador" | "visualizador"
+      papel_usuario:
+        | "admin"
+        | "gerente"
+        | "operador"
+        | "visualizador"
+        | "vendedor"
+        | "caixa"
+        | "estoquista"
       status_cliente: "ativo" | "inativo" | "bloqueado"
       status_conta_pagar: "pendente" | "pago" | "atrasado" | "cancelado"
       status_emprestimo:
@@ -1462,6 +1520,7 @@ export type Database = {
         | "quitado"
         | "inadimplente"
         | "cancelado"
+      status_entrega: "pendente" | "separando" | "pronto" | "entregue"
       status_parcela: "pendente" | "pago" | "atrasado" | "cancelado"
       status_parcela_emp:
         | "pendente"
@@ -1619,7 +1678,15 @@ export const Constants = {
         "servico",
         "outros",
       ],
-      papel_usuario: ["admin", "gerente", "operador", "visualizador"],
+      papel_usuario: [
+        "admin",
+        "gerente",
+        "operador",
+        "visualizador",
+        "vendedor",
+        "caixa",
+        "estoquista",
+      ],
       status_cliente: ["ativo", "inativo", "bloqueado"],
       status_conta_pagar: ["pendente", "pago", "atrasado", "cancelado"],
       status_emprestimo: [
@@ -1630,6 +1697,7 @@ export const Constants = {
         "inadimplente",
         "cancelado",
       ],
+      status_entrega: ["pendente", "separando", "pronto", "entregue"],
       status_parcela: ["pendente", "pago", "atrasado", "cancelado"],
       status_parcela_emp: [
         "pendente",
