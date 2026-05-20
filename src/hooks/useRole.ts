@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { useEmpresa } from "@/providers/EmpresaProvider";
@@ -89,25 +89,21 @@ const MATRIX: Record<Papel, Perms> = {
 export function useRole() {
   const { user } = useAuth();
   const { empresaAtiva } = useEmpresa();
-  const [papel, setPapel] = useState<Papel | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user || !empresaAtiva) { setPapel(null); setLoading(false); return; }
-    (async () => {
-      setLoading(true);
+  const { data: papel, isLoading: loading } = useQuery({
+    queryKey: ["papel", user?.id, empresaAtiva?.id],
+    enabled: !!user && !!empresaAtiva,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
       const { data } = await supabase
         .from("usuario_empresa")
         .select("papel")
-        .eq("usuario_id", user.id)
-        .eq("empresa_id", empresaAtiva.id)
+        .eq("usuario_id", user!.id)
+        .eq("empresa_id", empresaAtiva!.id)
         .eq("ativo", true)
         .maybeSingle();
-      setPapel((data?.papel as Papel) ?? null);
-      setLoading(false);
-    })();
-  }, [user, empresaAtiva]);
-
+      return ((data?.papel as Papel) ?? null);
+    },
+  });
   const perms = papel ? MATRIX[papel] : MATRIX.visualizador;
-  return { papel, loading, ...perms, can: (action: keyof Perms) => perms[action] };
+  return { papel: papel ?? null, loading, ...perms, can: (action: keyof Perms) => perms[action] };
 }
