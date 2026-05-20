@@ -145,6 +145,7 @@ function LoginPage() {
                   type="email"
                   required
                   autoComplete="email"
+                  autoFocus
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nome@gruposrsm.com.br"

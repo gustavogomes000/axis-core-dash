@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/providers/EmpresaProvider";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Settings2 } from "lucide-react";
+import { Plus, Settings2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatarMoeda, formatarData } from "@/lib/format";
 import { calcularParcelaPrice } from "@/lib/finance";
@@ -19,12 +19,23 @@ import { toast } from "sonner";
 import { RoleGate } from "@/components/RoleGate";
 import { AcoesEmprestimoDialog } from "@/components/AcoesEmprestimoDialog";
 
-export const Route = createFileRoute("/_auth/factoring/emprestimos")({ component: Page });
+export const Route = createFileRoute("/_auth/factoring/emprestimos")({
+  component: Page,
+  validateSearch: (s: Record<string, unknown>) => ({
+    novo: s.novo ? 1 : undefined,
+    valor: s.valor ? Number(s.valor) : undefined,
+    taxa: s.taxa ? Number(s.taxa) : undefined,
+    prazo: s.prazo ? Number(s.prazo) : undefined,
+    venc: typeof s.venc === "string" ? s.venc : undefined,
+  }),
+});
 
 function Page() {
   const qc = useQueryClient();
   const { empresaAtiva } = useEmpresa();
   const empresaId = empresaAtiva?.id;
+  const search = Route.useSearch();
+  const nav = useNavigate();
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["emprestimos", empresaId],
@@ -46,6 +57,21 @@ function Page() {
   const [open, setOpen] = useState(false);
   const [acoesEmp, setAcoesEmp] = useState<any | null>(null);
   const [f, setF] = useState({ cliente_id: "", valor_principal: 5000, taxa_juros: 5, prazo_meses: 12, valor_entrada: 0, data_primeiro_vencimento: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) });
+
+  useEffect(() => {
+    if (search.novo) {
+      setF((prev) => ({
+        ...prev,
+        valor_principal: search.valor ?? prev.valor_principal,
+        taxa_juros: search.taxa ?? prev.taxa_juros,
+        prazo_meses: search.prazo ?? prev.prazo_meses,
+        data_primeiro_vencimento: search.venc ?? prev.data_primeiro_vencimento,
+      }));
+      setOpen(true);
+      nav({ to: "/factoring/emprestimos", search: {}, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.novo]);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -148,7 +174,11 @@ function Page() {
             {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Sem empréstimos</TableCell></TableRow>}
             {data.map((e: any) => (
               <TableRow key={e.id}>
-                <TableCell className="font-mono">{e.numero_contrato}</TableCell>
+                <TableCell className="font-mono">
+                  <Link to="/factoring/emprestimos/$id" params={{ id: e.id }} className="hover:underline inline-flex items-center gap-1">
+                    {e.numero_contrato} <ExternalLink className="h-3 w-3 opacity-50" />
+                  </Link>
+                </TableCell>
                 <TableCell>{e.clientes_factoring?.nome ?? "—"}</TableCell>
                 <TableCell>{formatarData(e.created_at)}</TableCell>
                 <TableCell><Badge variant={e.status === "ativo" ? "default" : e.status === "quitado" ? "secondary" : "outline"}>{e.status}</Badge></TableCell>

@@ -40,6 +40,7 @@ import { Route as AuthEmporioConfiguracoesRouteImport } from './routes/_auth/emp
 import { Route as AuthEmporioComissoesRouteImport } from './routes/_auth/emporio/comissoes'
 import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
 import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
+import { Route as AuthFactoringEmprestimosIdRouteImport } from './routes/_auth/factoring/emprestimos.$id'
 
 const SelecionarEmpresaRoute = SelecionarEmpresaRouteImport.update({
   id: '/selecionar-empresa',
@@ -201,6 +202,12 @@ const AuthEmporioCatalogoRoute = AuthEmporioCatalogoRouteImport.update({
   path: '/catalogo',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
+const AuthFactoringEmprestimosIdRoute =
+  AuthFactoringEmprestimosIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthFactoringEmprestimosRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -226,13 +233,14 @@ export interface FileRoutesByFullPath {
   '/factoring/clientes': typeof AuthFactoringClientesRoute
   '/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
   '/factoring/contas-pagar': typeof AuthFactoringContasPagarRoute
-  '/factoring/emprestimos': typeof AuthFactoringEmprestimosRoute
+  '/factoring/emprestimos': typeof AuthFactoringEmprestimosRouteWithChildren
   '/factoring/inadimplentes': typeof AuthFactoringInadimplentesRoute
   '/factoring/parcelas': typeof AuthFactoringParcelasRoute
   '/factoring/relatorio': typeof AuthFactoringRelatorioRoute
   '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio/': typeof AuthEmporioIndexRoute
   '/factoring/': typeof AuthFactoringIndexRoute
+  '/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -256,13 +264,14 @@ export interface FileRoutesByTo {
   '/factoring/clientes': typeof AuthFactoringClientesRoute
   '/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
   '/factoring/contas-pagar': typeof AuthFactoringContasPagarRoute
-  '/factoring/emprestimos': typeof AuthFactoringEmprestimosRoute
+  '/factoring/emprestimos': typeof AuthFactoringEmprestimosRouteWithChildren
   '/factoring/inadimplentes': typeof AuthFactoringInadimplentesRoute
   '/factoring/parcelas': typeof AuthFactoringParcelasRoute
   '/factoring/relatorio': typeof AuthFactoringRelatorioRoute
   '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio': typeof AuthEmporioIndexRoute
   '/factoring': typeof AuthFactoringIndexRoute
+  '/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -290,13 +299,14 @@ export interface FileRoutesById {
   '/_auth/factoring/clientes': typeof AuthFactoringClientesRoute
   '/_auth/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
   '/_auth/factoring/contas-pagar': typeof AuthFactoringContasPagarRoute
-  '/_auth/factoring/emprestimos': typeof AuthFactoringEmprestimosRoute
+  '/_auth/factoring/emprestimos': typeof AuthFactoringEmprestimosRouteWithChildren
   '/_auth/factoring/inadimplentes': typeof AuthFactoringInadimplentesRoute
   '/_auth/factoring/parcelas': typeof AuthFactoringParcelasRoute
   '/_auth/factoring/relatorio': typeof AuthFactoringRelatorioRoute
   '/_auth/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/_auth/emporio/': typeof AuthEmporioIndexRoute
   '/_auth/factoring/': typeof AuthFactoringIndexRoute
+  '/_auth/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -331,6 +341,7 @@ export interface FileRouteTypes {
     | '/factoring/simulador'
     | '/emporio/'
     | '/factoring/'
+    | '/factoring/emprestimos/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/factoring/simulador'
     | '/emporio'
     | '/factoring'
+    | '/factoring/emprestimos/$id'
   id:
     | '__root__'
     | '/'
@@ -394,6 +406,7 @@ export interface FileRouteTypes {
     | '/_auth/factoring/simulador'
     | '/_auth/emporio/'
     | '/_auth/factoring/'
+    | '/_auth/factoring/emprestimos/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -625,6 +638,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioCatalogoRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/factoring/emprestimos/$id': {
+      id: '/_auth/factoring/emprestimos/$id'
+      path: '/$id'
+      fullPath: '/factoring/emprestimos/$id'
+      preLoaderRoute: typeof AuthFactoringEmprestimosIdRouteImport
+      parentRoute: typeof AuthFactoringEmprestimosRoute
+    }
   }
 }
 
@@ -664,11 +684,25 @@ const AuthEmporioRouteWithChildren = AuthEmporioRoute._addFileChildren(
   AuthEmporioRouteChildren,
 )
 
+interface AuthFactoringEmprestimosRouteChildren {
+  AuthFactoringEmprestimosIdRoute: typeof AuthFactoringEmprestimosIdRoute
+}
+
+const AuthFactoringEmprestimosRouteChildren: AuthFactoringEmprestimosRouteChildren =
+  {
+    AuthFactoringEmprestimosIdRoute: AuthFactoringEmprestimosIdRoute,
+  }
+
+const AuthFactoringEmprestimosRouteWithChildren =
+  AuthFactoringEmprestimosRoute._addFileChildren(
+    AuthFactoringEmprestimosRouteChildren,
+  )
+
 interface AuthFactoringRouteChildren {
   AuthFactoringClientesRoute: typeof AuthFactoringClientesRoute
   AuthFactoringConfiguracoesRoute: typeof AuthFactoringConfiguracoesRoute
   AuthFactoringContasPagarRoute: typeof AuthFactoringContasPagarRoute
-  AuthFactoringEmprestimosRoute: typeof AuthFactoringEmprestimosRoute
+  AuthFactoringEmprestimosRoute: typeof AuthFactoringEmprestimosRouteWithChildren
   AuthFactoringInadimplentesRoute: typeof AuthFactoringInadimplentesRoute
   AuthFactoringParcelasRoute: typeof AuthFactoringParcelasRoute
   AuthFactoringRelatorioRoute: typeof AuthFactoringRelatorioRoute
@@ -680,7 +714,7 @@ const AuthFactoringRouteChildren: AuthFactoringRouteChildren = {
   AuthFactoringClientesRoute: AuthFactoringClientesRoute,
   AuthFactoringConfiguracoesRoute: AuthFactoringConfiguracoesRoute,
   AuthFactoringContasPagarRoute: AuthFactoringContasPagarRoute,
-  AuthFactoringEmprestimosRoute: AuthFactoringEmprestimosRoute,
+  AuthFactoringEmprestimosRoute: AuthFactoringEmprestimosRouteWithChildren,
   AuthFactoringInadimplentesRoute: AuthFactoringInadimplentesRoute,
   AuthFactoringParcelasRoute: AuthFactoringParcelasRoute,
   AuthFactoringRelatorioRoute: AuthFactoringRelatorioRoute,

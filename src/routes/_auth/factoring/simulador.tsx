@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { calcularParcelaPrice, gerarTabelaAmortizacao } from "@/lib/finance";
 import { formatarMoeda, formatarData } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/factoring/simulador")({ component: Page });
 
@@ -34,6 +36,11 @@ function Page() {
             <div className="flex justify-between"><span className="text-muted-foreground">Total a pagar</span><strong>{formatarMoeda(total)}</strong></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Total de juros</span><strong>{formatarMoeda(total - principal)}</strong></div>
           </div>
+          <Button asChild className="w-full">
+            <Link to="/factoring/emprestimos" search={{ novo: 1, valor: principal, taxa, prazo: meses, venc: primeiro } as any}>
+              Efetivar este empréstimo <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
         </CardContent></Card>
         <Card><CardContent className="p-0">
           <div className="max-h-[520px] overflow-auto">
