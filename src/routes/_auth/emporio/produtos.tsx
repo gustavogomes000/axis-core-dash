@@ -100,6 +100,24 @@ function Page() {
         </DialogContent>
       </Dialog>
       <ConfirmDialog open={!!delId} onOpenChange={(v) => !v && setDelId(null)} title="Excluir produto?" description="Esta ação não pode ser desfeita." destructive onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }} />
+      <ImportarCSVDialog
+        open={openCSV}
+        onOpenChange={setOpenCSV}
+        titulo="Importar produtos"
+        tabela="produtos"
+        invalidate={["produtos"]}
+        exemploNome="produtos_exemplo.csv"
+        exemploCSV={"nome,sku,preco,preco_custo,estoque,estoque_minimo\nSofá 3 lugares,SOF001,1899.90,950,5,1\nMesa de centro,MES001,499.00,220,12,2"}
+        campos={[
+          { key: "nome", label: "Nome", required: true },
+          { key: "sku", label: "SKU" },
+          { key: "preco", label: "Preço", required: true, transform: (v) => parseFloat(v.replace(",", ".")) },
+          { key: "preco_custo", label: "Custo", transform: (v) => parseFloat(v.replace(",", ".")) },
+          { key: "estoque", label: "Estoque", transform: (v) => parseInt(v) || 0 },
+          { key: "estoque_minimo", label: "Estoque mínimo", transform: (v) => parseInt(v) || 0 },
+          { key: "descricao", label: "Descrição" },
+        ]}
+      />
     </div>
   );
 }
