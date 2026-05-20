@@ -9,38 +9,181 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SelecionarEmpresaRouteImport } from './routes/selecionar-empresa'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
+import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthFactoringRouteImport } from './routes/_auth/factoring'
+import { Route as AuthEmporioRouteImport } from './routes/_auth/emporio'
+import { Route as AuthFactoringIndexRouteImport } from './routes/_auth/factoring/index'
+import { Route as AuthEmporioIndexRouteImport } from './routes/_auth/emporio/index'
 
+const SelecionarEmpresaRoute = SelecionarEmpresaRouteImport.update({
+  id: '/selecionar-empresa',
+  path: '/selecionar-empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
+  id: '/esqueci-senha',
+  path: '/esqueci-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthFactoringRoute = AuthFactoringRouteImport.update({
+  id: '/factoring',
+  path: '/factoring',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthEmporioRoute = AuthEmporioRouteImport.update({
+  id: '/emporio',
+  path: '/emporio',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthFactoringIndexRoute = AuthFactoringIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthFactoringRoute,
+} as any)
+const AuthEmporioIndexRoute = AuthEmporioIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/selecionar-empresa': typeof SelecionarEmpresaRoute
+  '/emporio': typeof AuthEmporioRouteWithChildren
+  '/factoring': typeof AuthFactoringRouteWithChildren
+  '/emporio/': typeof AuthEmporioIndexRoute
+  '/factoring/': typeof AuthFactoringIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/selecionar-empresa': typeof SelecionarEmpresaRoute
+  '/emporio': typeof AuthEmporioIndexRoute
+  '/factoring': typeof AuthFactoringIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/selecionar-empresa': typeof SelecionarEmpresaRoute
+  '/_auth/emporio': typeof AuthEmporioRouteWithChildren
+  '/_auth/factoring': typeof AuthFactoringRouteWithChildren
+  '/_auth/emporio/': typeof AuthEmporioIndexRoute
+  '/_auth/factoring/': typeof AuthFactoringIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/esqueci-senha'
+    | '/login'
+    | '/reset-password'
+    | '/selecionar-empresa'
+    | '/emporio'
+    | '/factoring'
+    | '/emporio/'
+    | '/factoring/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/esqueci-senha'
+    | '/login'
+    | '/reset-password'
+    | '/selecionar-empresa'
+    | '/emporio'
+    | '/factoring'
+  id:
+    | '__root__'
+    | '/'
+    | '/_auth'
+    | '/esqueci-senha'
+    | '/login'
+    | '/reset-password'
+    | '/selecionar-empresa'
+    | '/_auth/emporio'
+    | '/_auth/factoring'
+    | '/_auth/emporio/'
+    | '/_auth/factoring/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  EsqueciSenhaRoute: typeof EsqueciSenhaRoute
+  LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SelecionarEmpresaRoute: typeof SelecionarEmpresaRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/selecionar-empresa': {
+      id: '/selecionar-empresa'
+      path: '/selecionar-empresa'
+      fullPath: '/selecionar-empresa'
+      preLoaderRoute: typeof SelecionarEmpresaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/esqueci-senha': {
+      id: '/esqueci-senha'
+      path: '/esqueci-senha'
+      fullPath: '/esqueci-senha'
+      preLoaderRoute: typeof EsqueciSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +191,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/factoring': {
+      id: '/_auth/factoring'
+      path: '/factoring'
+      fullPath: '/factoring'
+      preLoaderRoute: typeof AuthFactoringRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/emporio': {
+      id: '/_auth/emporio'
+      path: '/emporio'
+      fullPath: '/emporio'
+      preLoaderRoute: typeof AuthEmporioRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/factoring/': {
+      id: '/_auth/factoring/'
+      path: '/'
+      fullPath: '/factoring/'
+      preLoaderRoute: typeof AuthFactoringIndexRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/emporio/': {
+      id: '/_auth/emporio/'
+      path: '/'
+      fullPath: '/emporio/'
+      preLoaderRoute: typeof AuthEmporioIndexRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
   }
 }
 
+interface AuthEmporioRouteChildren {
+  AuthEmporioIndexRoute: typeof AuthEmporioIndexRoute
+}
+
+const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
+  AuthEmporioIndexRoute: AuthEmporioIndexRoute,
+}
+
+const AuthEmporioRouteWithChildren = AuthEmporioRoute._addFileChildren(
+  AuthEmporioRouteChildren,
+)
+
+interface AuthFactoringRouteChildren {
+  AuthFactoringIndexRoute: typeof AuthFactoringIndexRoute
+}
+
+const AuthFactoringRouteChildren: AuthFactoringRouteChildren = {
+  AuthFactoringIndexRoute: AuthFactoringIndexRoute,
+}
+
+const AuthFactoringRouteWithChildren = AuthFactoringRoute._addFileChildren(
+  AuthFactoringRouteChildren,
+)
+
+interface AuthRouteChildren {
+  AuthEmporioRoute: typeof AuthEmporioRouteWithChildren
+  AuthFactoringRoute: typeof AuthFactoringRouteWithChildren
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthEmporioRoute: AuthEmporioRouteWithChildren,
+  AuthFactoringRoute: AuthFactoringRouteWithChildren,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
+  EsqueciSenhaRoute: EsqueciSenhaRoute,
+  LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SelecionarEmpresaRoute: SelecionarEmpresaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
