@@ -4,16 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { StatCard } from "@/components/StatCard";
 import { formatarMoeda, formatarData } from "@/lib/format";
-import { ShoppingCart, Package, Users, Wallet, Plus, FilePlus, FileMinus, AlertTriangle, ArrowRight } from "lucide-react";
+import { ShoppingCart, Package, Users, Wallet, Plus, AlertTriangle, ArrowRight, Truck, Trophy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { OnboardingTour, checkHasRows } from "@/components/OnboardingTour";
+import { useRole } from "@/hooks/useRole";
 
 export const Route = createFileRoute("/_auth/emporio/")({ component: Dashboard });
 
 function Dashboard() {
   const { empresaAtiva } = useEmpresa();
+  const role = useRole();
   const empresaId = empresaAtiva?.id;
   const hoje = new Date().toISOString().slice(0, 10);
   const em7 = new Date(Date.now() + 7 * 86400_000).toISOString().slice(0, 10);
@@ -43,21 +45,31 @@ function Dashboard() {
     },
   });
 
+  const papelLabel: Record<string, string> = {
+    admin: "Dono", gerente: "Gerente", vendedor: "Vendedor",
+    caixa: "Caixa", estoquista: "Estoque", operador: "Operador", visualizador: "Visualizador",
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Olá! Bem-vindo ao Empório</h1>
-          <p className="text-sm text-muted-foreground">Aqui está o resumo do seu negócio hoje</p>
+          <p className="text-sm text-muted-foreground">
+            Você está como <strong>{role.papel ? papelLabel[role.papel] : "—"}</strong>. {role.verRelatorioDono ? "Aqui está o resumo do seu negócio hoje." : "Aqui está o que você precisa hoje."}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button asChild><Link to="/emporio/vendas"><Plus className="h-4 w-4 mr-1" /> Nova venda</Link></Button>
-          <Button asChild variant="outline"><Link to="/emporio/produtos"><Package className="h-4 w-4 mr-1" /> Cadastrar produto</Link></Button>
-          <Button asChild variant="outline"><Link to="/emporio/clientes"><Users className="h-4 w-4 mr-1" /> Novo cliente</Link></Button>
+          {role.venderProdutos && <Button asChild size="lg"><Link to="/emporio/vendas"><Plus className="h-4 w-4 mr-1" /> Nova venda</Link></Button>}
+          {role.registrarPagamento && <Button asChild variant="outline" size="lg"><Link to="/emporio/contas-receber"><Wallet className="h-4 w-4 mr-1" /> Registrar recebimento</Link></Button>}
+          {role.gerirEntrega && <Button asChild variant="outline" size="lg"><Link to="/emporio/entregas"><Truck className="h-4 w-4 mr-1" /> Ver entregas</Link></Button>}
+          {role.editarProduto && <Button asChild variant="outline"><Link to="/emporio/produtos"><Package className="h-4 w-4 mr-1" /> Produtos</Link></Button>}
+          <Button asChild variant="outline"><Link to="/emporio/clientes"><Users className="h-4 w-4 mr-1" /> Clientes</Link></Button>
+          {role.verComissaoPropria && <Button asChild variant="outline"><Link to="/emporio/comissoes"><Trophy className="h-4 w-4 mr-1" /> Comissões</Link></Button>}
         </div>
       </div>
 
-      <OnboardingTour
+      {role.verRelatorioDono && <OnboardingTour
         storageKey="tour-emporio"
         passos={[
           { label: "Cadastrar primeiro produto", to: "/emporio/produtos", check: checkHasRows("produtos") },
@@ -65,17 +77,17 @@ function Dashboard() {
           { label: "Registrar primeira venda", to: "/emporio/vendas", check: checkHasRows("vendas") },
           { label: "Configurar dados da empresa", to: "/emporio/configuracoes", check: checkHasRows("config_emporio") },
         ]}
-      />
+      />}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Vendas aprovadas" value={formatarMoeda(data?.totalVendas ?? 0)} hint={`${data?.qtdVendas ?? 0} vendas registradas`} icon={ShoppingCart} />
+        {role.verRelatorioDono && <StatCard label="Vendas aprovadas" value={formatarMoeda(data?.totalVendas ?? 0)} hint={`${data?.qtdVendas ?? 0} vendas registradas`} icon={ShoppingCart} />}
         <StatCard label="Produtos" value={data?.totalProdutos ?? 0} hint={`${data?.estoqueBaixo ?? 0} com estoque baixo`} icon={Package} tone="secondary" />
         <StatCard label="Clientes" value={data?.totalClientes ?? 0} icon={Users} tone="muted" />
-        <StatCard label="Saldo de caixa" value={formatarMoeda(data?.saldo ?? 0)} icon={Wallet} tone={data && data.saldo < 0 ? "destructive" : "primary"} />
+        {role.verFinanceiro && <StatCard label="Saldo de caixa" value={formatarMoeda(data?.saldo ?? 0)} icon={Wallet} tone={data && data.saldo < 0 ? "destructive" : "primary"} />}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        {role.verFinanceiro && <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-destructive" /> Vence em 7 dias</CardTitle>
             <Button asChild size="sm" variant="ghost"><Link to="/emporio/contas-receber">Ver tudo <ArrowRight className="h-3.5 w-3.5 ml-1" /></Link></Button>
@@ -98,7 +110,7 @@ function Dashboard() {
               );
             })}
           </CardContent>
-        </Card>
+        </Card>}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base flex items-center gap-2"><ShoppingCart className="h-4 w-4" /> Vendas recentes</CardTitle>
