@@ -32,7 +32,7 @@ function Page() {
         .eq("status", "aprovada")
         .gte("created_at", inicioIso)
         .order("created_at", { ascending: false });
-      if (!vetTodos && user?.id) q = q.eq("vendedor_id", user.id);
+      if (!vetTodos && user?.id) q = q.eq("vendedor_id" as any, user.id);
       return (await q).data ?? [];
     },
   });
