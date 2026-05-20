@@ -1,9 +1,11 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { LogOut, Building2 } from "lucide-react";
+import { LogOut, Building2, Search } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { Button } from "@/components/ui/button";
+import { NotificationsBell } from "@/components/NotificationsBell";
+import { CommandPalette } from "@/components/CommandPalette";
 import logoFactoring from "@/assets/brand/logo-factoring.png";
 import logoEmporio from "@/assets/brand/logo-emporio.png";
 
@@ -22,6 +24,7 @@ export function AppShell({ items, groupLabel, children }: { items: NavItem[]; gr
           <Header />
           <main className="flex-1 p-6 overflow-auto">{children}</main>
         </div>
+        <CommandPalette />
       </div>
     </SidebarProvider>
   );
@@ -86,7 +89,16 @@ function Header() {
   return (
     <header className="h-14 border-b bg-background flex items-center px-4 gap-3">
       <SidebarTrigger />
+      <button
+        onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))}
+        className="hidden md:flex items-center gap-2 text-sm text-muted-foreground border rounded-md px-3 py-1.5 hover:bg-muted/60 transition-colors"
+      >
+        <Search className="h-3.5 w-3.5" />
+        <span>Buscar…</span>
+        <kbd className="ml-2 text-[10px] bg-muted px-1.5 py-0.5 rounded border">Ctrl K</kbd>
+      </button>
       <div className="flex-1" />
+      <NotificationsBell />
       <Button variant="ghost" size="sm" onClick={() => nav({ to: "/selecionar-empresa" })}>
         <Building2 className="h-4 w-4 mr-2" /> {empresaAtiva?.nome ?? "Selecionar empresa"}
       </Button>
