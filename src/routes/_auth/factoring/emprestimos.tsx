@@ -16,6 +16,7 @@ import { formatarMoeda, formatarData } from "@/lib/format";
 import { calcularParcelaPrice } from "@/lib/finance";
 import { gerarTabelaAmortizacao } from "@/lib/finance";
 import { toast } from "sonner";
+import { RoleGate } from "@/components/RoleGate";
 
 export const Route = createFileRoute("/_auth/factoring/emprestimos")({ component: Page });
 
@@ -112,7 +113,7 @@ function Page() {
   return (
     <div>
       <PageHeader title="Empréstimos" action={
-        <Dialog open={open} onOpenChange={setOpen}>
+        <RoleGate action="write"><Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo</Button></DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Novo empréstimo</DialogTitle></DialogHeader>
@@ -135,7 +136,7 @@ function Page() {
               <DialogFooter><Button type="submit" disabled={create.isPending || !f.cliente_id}>Criar</Button></DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+        </Dialog></RoleGate>
       } />
       <div className="bg-card rounded-lg border">
         <Table>
