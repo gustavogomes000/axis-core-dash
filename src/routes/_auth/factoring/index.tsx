@@ -8,6 +8,7 @@ import { FileText, AlertTriangle, Wallet, Users, Plus, Calculator, ArrowRight } 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { OnboardingTour, checkHasRows } from "@/components/OnboardingTour";
 
 export const Route = createFileRoute("/_auth/factoring/")({ component: Dashboard });
 
@@ -50,6 +51,16 @@ function Dashboard() {
           <Button asChild variant="outline"><Link to="/factoring/clientes"><Users className="h-4 w-4 mr-1" /> Novo cliente</Link></Button>
         </div>
       </div>
+
+      <OnboardingTour
+        storageKey="tour-factoring"
+        passos={[
+          { label: "Cadastrar primeiro cliente", to: "/factoring/clientes", check: checkHasRows("clientes_factoring") },
+          { label: "Simular um empréstimo", to: "/factoring/simulador", check: async () => false },
+          { label: "Criar primeiro empréstimo", to: "/factoring/emprestimos", check: checkHasRows("emprestimos") },
+          { label: "Configurar taxas e mensagens", to: "/factoring/configuracoes", check: checkHasRows("config_factoring") },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Carteira ativa" value={formatarMoeda(data?.carteira ?? 0)} hint={`${data?.ativos ?? 0} contratos ativos`} icon={Wallet} />

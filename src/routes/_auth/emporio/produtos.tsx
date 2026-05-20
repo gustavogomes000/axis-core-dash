@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Pencil, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Upload } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ImportarCSVDialog } from "@/components/ImportarCSVDialog";
 import { formatarMoeda } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 
@@ -23,6 +24,7 @@ function Page() {
   const del = useDelete("produtos", ["produtos"]);
   const [open, setOpen] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+  const [openCSV, setOpenCSV] = useState(false);
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState<typeof VAZIO>(VAZIO);
 
@@ -46,7 +48,12 @@ function Page() {
   return (
     <div>
       <PageHeader title="Produtos" subtitle="Catálogo da loja" action={
-        <RoleGate action="write"><Button onClick={novo}><Plus className="h-4 w-4 mr-2" />Novo produto</Button></RoleGate>
+        <RoleGate action="write">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setOpenCSV(true)}><Upload className="h-4 w-4 mr-2" />Importar CSV</Button>
+            <Button onClick={novo}><Plus className="h-4 w-4 mr-2" />Novo produto</Button>
+          </div>
+        </RoleGate>
       } />
       <div className="relative mb-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -93,6 +100,24 @@ function Page() {
         </DialogContent>
       </Dialog>
       <ConfirmDialog open={!!delId} onOpenChange={(v) => !v && setDelId(null)} title="Excluir produto?" description="Esta ação não pode ser desfeita." destructive onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }} />
+      <ImportarCSVDialog
+        open={openCSV}
+        onOpenChange={setOpenCSV}
+        titulo="Importar produtos"
+        tabela="produtos"
+        invalidate={["produtos"]}
+        exemploNome="produtos_exemplo.csv"
+        exemploCSV={"nome,sku,preco,preco_custo,estoque,estoque_minimo\nSofá 3 lugares,SOF001,1899.90,950,5,1\nMesa de centro,MES001,499.00,220,12,2"}
+        campos={[
+          { key: "nome", label: "Nome", required: true },
+          { key: "sku", label: "SKU" },
+          { key: "preco", label: "Preço", required: true, transform: (v) => parseFloat(v.replace(",", ".")) },
+          { key: "preco_custo", label: "Custo", transform: (v) => parseFloat(v.replace(",", ".")) },
+          { key: "estoque", label: "Estoque", transform: (v) => parseInt(v) || 0 },
+          { key: "estoque_minimo", label: "Estoque mínimo", transform: (v) => parseInt(v) || 0 },
+          { key: "descricao", label: "Descrição" },
+        ]}
+      />
     </div>
   );
 }
