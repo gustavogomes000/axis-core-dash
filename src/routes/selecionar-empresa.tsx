@@ -4,7 +4,9 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, LogOut } from "lucide-react";
+import { LogOut, ArrowUpRight } from "lucide-react";
+import logoFactoring from "@/assets/brand/logo-factoring.png";
+import logoEmporio from "@/assets/brand/logo-emporio.png";
 
 export const Route = createFileRoute("/selecionar-empresa")({ component: Page });
 
@@ -23,40 +25,57 @@ function Page() {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-muted/30">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen p-6 lg:p-12 bg-background">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-12">
           <div>
-            <h1 className="text-2xl font-bold">Selecione a empresa</h1>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Manual de marca · 2026</p>
+            <h1 className="mt-2 font-serif text-4xl text-foreground">Grupo SRSM</h1>
           </div>
           <Button variant="ghost" size="sm" onClick={async () => { await signOut(); nav({ to: "/login" }); }}>
             <LogOut className="h-4 w-4 mr-2" /> Sair
           </Button>
         </div>
+
+        <p className="text-sm text-muted-foreground max-w-xl mb-8">
+          Olá <span className="text-foreground font-medium">{user?.email}</span>. Selecione a empresa para começar.
+        </p>
+
         {loading ? (
           <p className="text-muted-foreground">Carregando empresas…</p>
         ) : empresas.length === 0 ? (
-          <Card><CardContent className="p-6 text-center text-muted-foreground">
+          <Card><CardContent className="p-8 text-center text-muted-foreground">
             Nenhuma empresa vinculada à sua conta. Solicite acesso ao administrador.
           </CardContent></Card>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-4">
-            {empresas.map((e) => (
-              <button key={e.id} onClick={() => go(e)} className="text-left">
-                <Card className="hover:border-primary transition-colors">
-                  <CardContent className="p-6 flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-xl bg-primary/10 grid place-items-center">
-                      <Building2 className="h-7 w-7 text-primary" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {empresas.map((e) => {
+              const isFactoring = e.tipo === "factoring";
+              const logo = isFactoring ? logoFactoring : logoEmporio;
+              return (
+                <button key={e.id} onClick={() => go(e)} className="text-left group">
+                  <div className={`relative overflow-hidden rounded-3xl border transition-all group-hover:-translate-y-1 group-hover:shadow-2xl ${isFactoring ? "bg-sidebar text-sidebar-foreground border-sidebar-border" : "bg-card border-border"}`}>
+                    <div className="absolute top-6 right-6">
+                      <ArrowUpRight className={`h-5 w-5 ${isFactoring ? "text-secondary" : "text-foreground/50"}`} />
                     </div>
-                    <div>
-                      <div className="font-semibold">{e.nome}</div>
-                      <div className="text-xs uppercase text-muted-foreground">{e.tipo}</div>
+                    <div className="p-8">
+                      <p className={`text-[10px] uppercase tracking-[0.3em] ${isFactoring ? "text-secondary" : "text-foreground/50"}`}>
+                        Empresa {isFactoring ? "01" : "02"}
+                      </p>
+                      <div className="h-48 my-6 grid place-items-center">
+                        <img src={logo} alt={e.nome} className="max-h-48 max-w-full object-contain" />
+                      </div>
+                      <h3 className="font-serif text-2xl">{e.nome}</h3>
+                      <p className={`mt-2 text-sm ${isFactoring ? "text-sidebar-foreground/70" : "text-muted-foreground"}`}>
+                        {isFactoring
+                          ? "Soluções financeiras — fomento mercantil, antecipação de recebíveis e crédito empresarial."
+                          : "Curadoria de móveis com história — peças que carregam tradição, artesania e sofisticação."}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              </button>
-            ))}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

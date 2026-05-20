@@ -4,6 +4,8 @@ import { LogOut, Building2 } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { Button } from "@/components/ui/button";
+import logoFactoring from "@/assets/brand/logo-factoring.png";
+import logoEmporio from "@/assets/brand/logo-emporio.png";
 
 export interface NavItem {
   title: string;
@@ -30,17 +32,24 @@ function ModuleSidebar({ items, groupLabel }: { items: NavItem[]; groupLabel: st
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { empresaAtiva } = useEmpresa();
+  const logo = empresaAtiva?.tipo === "emporio" ? logoEmporio : empresaAtiva?.tipo === "factoring" ? logoFactoring : null;
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="px-4 py-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-md bg-primary text-primary-foreground grid place-items-center font-bold">S</div>
+            <div className="h-10 w-10 rounded-md bg-sidebar-accent grid place-items-center overflow-hidden shrink-0">
+              {logo ? (
+                <img src={logo} alt="" className="h-full w-full object-contain p-1" />
+              ) : (
+                <span className="text-secondary font-serif text-lg">S</span>
+              )}
+            </div>
             {!collapsed && (
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-sidebar-foreground truncate">{empresaAtiva?.nome ?? "Grupo SRSM"}</div>
-                <div className="text-xs text-sidebar-foreground/60">SRSM ERP</div>
+                <div className="text-sm font-serif text-sidebar-foreground truncate">{empresaAtiva?.nome ?? "Grupo SRSM"}</div>
+                <div className="text-[10px] uppercase tracking-widest text-secondary">Grupo SRSM</div>
               </div>
             )}
           </div>
