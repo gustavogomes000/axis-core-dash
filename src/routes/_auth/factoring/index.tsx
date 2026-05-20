@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { StatCard } from "@/components/StatCard";
 import { formatarMoeda, formatarData } from "@/lib/format";
-import { FileText, AlertTriangle, Wallet, Users, Plus, Calculator, ArrowRight, ListChecks, FileMinus, BarChart3 } from "lucide-react";
+import { FileText, AlertTriangle, Wallet, Users, Plus, Calculator, ArrowRight, ListChecks, FileMinus, BarChart3, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,19 +22,21 @@ function Dashboard() {
     queryKey: ["fact-dash", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      const [emp, parc, cli, recentes, vencendo] = await Promise.all([
+      const [emp, parc, cli, recentes, vencendo, recebidoHoje] = await Promise.all([
         supabase.from("emprestimos").select("valor_principal, saldo_devedor, status").eq("empresa_id", empresaId!),
         supabase.from("parcelas_emprestimo").select("valor, status, data_vencimento").eq("empresa_id", empresaId!),
         supabase.from("clientes_factoring").select("id", { count: "exact", head: true }).eq("empresa_id", empresaId!),
         supabase.from("emprestimos").select("id,numero_contrato,valor_principal,status,created_at").eq("empresa_id", empresaId!).order("created_at", { ascending: false }).limit(5),
         supabase.from("parcelas_emprestimo").select("id,valor,data_vencimento,status,numero_parcela,total_parcelas,cliente_id").eq("empresa_id", empresaId!).neq("status", "pago").lte("data_vencimento", em7).order("data_vencimento", { ascending: true }).limit(5),
+        supabase.from("movimentacoes_caixa").select("valor").eq("empresa_id", empresaId!).eq("tipo", "entrada").eq("categoria", "emprestimo_recebimento").eq("data_movimentacao", hoje),
       ]);
       const ativos = (emp.data ?? []).filter((e: any) => e.status === "ativo");
       const carteira = ativos.reduce((s: number, e: any) => s + Number(e.saldo_devedor), 0);
       const emprestado = (emp.data ?? []).reduce((s: number, e: any) => s + Number(e.valor_principal), 0);
       const atrasadas = (parc.data ?? []).filter((p: any) => p.status === "atrasado");
       const aReceber = (parc.data ?? []).filter((p: any) => p.status === "pendente").reduce((s: number, p: any) => s + Number(p.valor), 0);
-      return { ativos: ativos.length, carteira, emprestado, atrasadasQtd: atrasadas.length, aReceber, clientes: cli.count ?? 0, recentes: recentes.data ?? [], vencendo: vencendo.data ?? [] };
+      const recebido = (recebidoHoje.data ?? []).reduce((s: number, m: any) => s + Number(m.valor), 0);
+      return { ativos: ativos.length, carteira, emprestado, atrasadasQtd: atrasadas.length, aReceber, clientes: cli.count ?? 0, recentes: recentes.data ?? [], vencendo: vencendo.data ?? [], recebidoHoje: recebido };
     },
   });
 
@@ -62,7 +64,8 @@ function Dashboard() {
         ]}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCard label="Recebido hoje" value={formatarMoeda(data?.recebidoHoje ?? 0)} icon={TrendingUp} />
         <StatCard label="Carteira ativa" value={formatarMoeda(data?.carteira ?? 0)} hint={`${data?.ativos ?? 0} contratos ativos`} icon={Wallet} />
         <StatCard label="A receber" value={formatarMoeda(data?.aReceber ?? 0)} icon={FileText} tone="secondary" />
         <StatCard label="Parcelas em atraso" value={data?.atrasadasQtd ?? 0} icon={AlertTriangle} tone="destructive" />
