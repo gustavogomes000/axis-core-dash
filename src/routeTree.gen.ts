@@ -32,9 +32,11 @@ import { Route as AuthEmporioVendasRouteImport } from './routes/_auth/emporio/ve
 import { Route as AuthEmporioRelatorioRouteImport } from './routes/_auth/emporio/relatorio'
 import { Route as AuthEmporioProdutosRouteImport } from './routes/_auth/emporio/produtos'
 import { Route as AuthEmporioFluxoCaixaRouteImport } from './routes/_auth/emporio/fluxo-caixa'
+import { Route as AuthEmporioEntregasRouteImport } from './routes/_auth/emporio/entregas'
 import { Route as AuthEmporioContasReceberRouteImport } from './routes/_auth/emporio/contas-receber'
 import { Route as AuthEmporioContasPagarRouteImport } from './routes/_auth/emporio/contas-pagar'
 import { Route as AuthEmporioConfiguracoesRouteImport } from './routes/_auth/emporio/configuracoes'
+import { Route as AuthEmporioComissoesRouteImport } from './routes/_auth/emporio/comissoes'
 import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
 import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
 
@@ -156,6 +158,11 @@ const AuthEmporioFluxoCaixaRoute = AuthEmporioFluxoCaixaRouteImport.update({
   path: '/fluxo-caixa',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
+const AuthEmporioEntregasRoute = AuthEmporioEntregasRouteImport.update({
+  id: '/entregas',
+  path: '/entregas',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 const AuthEmporioContasReceberRoute =
   AuthEmporioContasReceberRouteImport.update({
     id: '/contas-receber',
@@ -173,6 +180,11 @@ const AuthEmporioConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthEmporioRoute,
   } as any)
+const AuthEmporioComissoesRoute = AuthEmporioComissoesRouteImport.update({
+  id: '/comissoes',
+  path: '/comissoes',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 const AuthEmporioClientesRoute = AuthEmporioClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -195,9 +207,11 @@ export interface FileRoutesByFullPath {
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/emporio/comissoes': typeof AuthEmporioComissoesRoute
   '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
   '/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
   '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/relatorio': typeof AuthEmporioRelatorioRoute
@@ -222,9 +236,11 @@ export interface FileRoutesByTo {
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/emporio/comissoes': typeof AuthEmporioComissoesRoute
   '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
   '/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
   '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/relatorio': typeof AuthEmporioRelatorioRoute
@@ -253,9 +269,11 @@ export interface FileRoutesById {
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/_auth/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/_auth/emporio/clientes': typeof AuthEmporioClientesRoute
+  '/_auth/emporio/comissoes': typeof AuthEmporioComissoesRoute
   '/_auth/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
   '/_auth/emporio/contas-pagar': typeof AuthEmporioContasPagarRoute
   '/_auth/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
+  '/_auth/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/_auth/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/_auth/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/_auth/emporio/relatorio': typeof AuthEmporioRelatorioRoute
@@ -284,9 +302,11 @@ export interface FileRouteTypes {
     | '/catalogo/$slug'
     | '/emporio/catalogo'
     | '/emporio/clientes'
+    | '/emporio/comissoes'
     | '/emporio/configuracoes'
     | '/emporio/contas-pagar'
     | '/emporio/contas-receber'
+    | '/emporio/entregas'
     | '/emporio/fluxo-caixa'
     | '/emporio/produtos'
     | '/emporio/relatorio'
@@ -311,9 +331,11 @@ export interface FileRouteTypes {
     | '/catalogo/$slug'
     | '/emporio/catalogo'
     | '/emporio/clientes'
+    | '/emporio/comissoes'
     | '/emporio/configuracoes'
     | '/emporio/contas-pagar'
     | '/emporio/contas-receber'
+    | '/emporio/entregas'
     | '/emporio/fluxo-caixa'
     | '/emporio/produtos'
     | '/emporio/relatorio'
@@ -341,9 +363,11 @@ export interface FileRouteTypes {
     | '/catalogo/$slug'
     | '/_auth/emporio/catalogo'
     | '/_auth/emporio/clientes'
+    | '/_auth/emporio/comissoes'
     | '/_auth/emporio/configuracoes'
     | '/_auth/emporio/contas-pagar'
     | '/_auth/emporio/contas-receber'
+    | '/_auth/emporio/entregas'
     | '/_auth/emporio/fluxo-caixa'
     | '/_auth/emporio/produtos'
     | '/_auth/emporio/relatorio'
@@ -533,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioFluxoCaixaRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/emporio/entregas': {
+      id: '/_auth/emporio/entregas'
+      path: '/entregas'
+      fullPath: '/emporio/entregas'
+      preLoaderRoute: typeof AuthEmporioEntregasRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
     '/_auth/emporio/contas-receber': {
       id: '/_auth/emporio/contas-receber'
       path: '/contas-receber'
@@ -552,6 +583,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/emporio/configuracoes'
       preLoaderRoute: typeof AuthEmporioConfiguracoesRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/emporio/comissoes': {
+      id: '/_auth/emporio/comissoes'
+      path: '/comissoes'
+      fullPath: '/emporio/comissoes'
+      preLoaderRoute: typeof AuthEmporioComissoesRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
     '/_auth/emporio/clientes': {
@@ -574,9 +612,11 @@ declare module '@tanstack/react-router' {
 interface AuthEmporioRouteChildren {
   AuthEmporioCatalogoRoute: typeof AuthEmporioCatalogoRoute
   AuthEmporioClientesRoute: typeof AuthEmporioClientesRoute
+  AuthEmporioComissoesRoute: typeof AuthEmporioComissoesRoute
   AuthEmporioConfiguracoesRoute: typeof AuthEmporioConfiguracoesRoute
   AuthEmporioContasPagarRoute: typeof AuthEmporioContasPagarRoute
   AuthEmporioContasReceberRoute: typeof AuthEmporioContasReceberRoute
+  AuthEmporioEntregasRoute: typeof AuthEmporioEntregasRoute
   AuthEmporioFluxoCaixaRoute: typeof AuthEmporioFluxoCaixaRoute
   AuthEmporioProdutosRoute: typeof AuthEmporioProdutosRoute
   AuthEmporioRelatorioRoute: typeof AuthEmporioRelatorioRoute
@@ -587,9 +627,11 @@ interface AuthEmporioRouteChildren {
 const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
   AuthEmporioCatalogoRoute: AuthEmporioCatalogoRoute,
   AuthEmporioClientesRoute: AuthEmporioClientesRoute,
+  AuthEmporioComissoesRoute: AuthEmporioComissoesRoute,
   AuthEmporioConfiguracoesRoute: AuthEmporioConfiguracoesRoute,
   AuthEmporioContasPagarRoute: AuthEmporioContasPagarRoute,
   AuthEmporioContasReceberRoute: AuthEmporioContasReceberRoute,
+  AuthEmporioEntregasRoute: AuthEmporioEntregasRoute,
   AuthEmporioFluxoCaixaRoute: AuthEmporioFluxoCaixaRoute,
   AuthEmporioProdutosRoute: AuthEmporioProdutosRoute,
   AuthEmporioRelatorioRoute: AuthEmporioRelatorioRoute,
@@ -653,3 +695,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
