@@ -32,7 +32,7 @@ function Page() {
   return (
     <div>
       <PageHeader title="Produtos" subtitle="Catálogo da loja" action={
-        <Dialog open={open} onOpenChange={setOpen}>
+        <RoleGate action="write"><Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Novo produto</DialogTitle></DialogHeader>
@@ -48,7 +48,7 @@ function Page() {
               <DialogFooter><Button type="submit" disabled={upsert.isPending}>Salvar</Button></DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+        </Dialog></RoleGate>
       } />
       <div className="bg-card rounded-lg border">
         <Table>
