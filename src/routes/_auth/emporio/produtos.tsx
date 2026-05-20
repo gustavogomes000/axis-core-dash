@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGate } from "@/components/RoleGate";
 import { useState } from "react";
 import { useList, useUpsert, useDelete } from "@/hooks/useEmpresaData";
 import { PageHeader } from "@/components/PageHeader";
