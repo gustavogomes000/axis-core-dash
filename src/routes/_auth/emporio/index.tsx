@@ -8,6 +8,7 @@ import { ShoppingCart, Package, Users, Wallet, Plus, FilePlus, FileMinus, AlertT
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { OnboardingTour, checkHasRows } from "@/components/OnboardingTour";
 
 export const Route = createFileRoute("/_auth/emporio/")({ component: Dashboard });
 
@@ -55,6 +56,16 @@ function Dashboard() {
           <Button asChild variant="outline"><Link to="/emporio/clientes"><Users className="h-4 w-4 mr-1" /> Novo cliente</Link></Button>
         </div>
       </div>
+
+      <OnboardingTour
+        storageKey="tour-emporio"
+        passos={[
+          { label: "Cadastrar primeiro produto", to: "/emporio/produtos", check: checkHasRows("produtos") },
+          { label: "Cadastrar primeiro cliente", to: "/emporio/clientes", check: checkHasRows("clientes_emporio") },
+          { label: "Registrar primeira venda", to: "/emporio/vendas", check: checkHasRows("vendas") },
+          { label: "Configurar dados da empresa", to: "/emporio/configuracoes", check: checkHasRows("config_emporio") },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Vendas aprovadas" value={formatarMoeda(data?.totalVendas ?? 0)} hint={`${data?.qtdVendas ?? 0} vendas registradas`} icon={ShoppingCart} />
