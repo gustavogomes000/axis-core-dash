@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { AppShell, type NavItem } from "@/components/AppShell";
-import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus } from "lucide-react";
+import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3 } from "lucide-react";
 
 const items: NavItem[] = [
   { title: "Dashboard", url: "/emporio", icon: LayoutDashboard },
@@ -13,6 +13,7 @@ const items: NavItem[] = [
   { title: "Contas a Pagar", url: "/emporio/contas-pagar", icon: FileMinus },
   { title: "Contas a Receber", url: "/emporio/contas-receber", icon: FilePlus },
   { title: "Catálogo", url: "/emporio/catalogo", icon: BookOpen },
+  { title: "Relatório", url: "/emporio/relatorio", icon: BarChart3 },
   { title: "Configurações", url: "/emporio/configuracoes", icon: Settings },
 ];
 
