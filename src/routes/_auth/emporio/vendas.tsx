@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RoleGate } from "@/components/RoleGate";
+import { useRole } from "@/hooks/useRole";
+import { useAuth } from "@/providers/AuthProvider";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +28,8 @@ function Page() {
   const qc = useQueryClient();
   const { empresaAtiva } = useEmpresa();
   const empresaId = empresaAtiva?.id;
+  const role = useRole();
+  const { user } = useAuth();
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["vendas", empresaId],
@@ -48,6 +52,14 @@ function Page() {
     queryFn: async () => (await supabase.from("produtos").select("id, nome, sku, preco, estoque").eq("empresa_id", empresaId!).order("nome")).data ?? [],
   });
 
+  const { data: cfg } = useQuery({
+    queryKey: ["config-emporio", empresaId],
+    enabled: !!empresaId,
+    queryFn: async () => (await supabase.from("config_emporio").select("*").eq("empresa_id", empresaId!).maybeSingle()).data,
+  });
+  const descontoMaxPct = Number((cfg as any)?.desconto_max_sem_aprovacao ?? 10);
+  const comissaoPadraoPct = Number((cfg as any)?.comissao_padrao_pct ?? 0);
+
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [cliente_id, setCliente] = useState<string>("");
@@ -62,6 +74,8 @@ function Page() {
 
   const subtotal = itens.reduce((s, i) => s + i.total, 0);
   const total = Math.max(0, subtotal - desconto);
+  const descontoPct = subtotal > 0 ? (desconto / subtotal) * 100 : 0;
+  const precisaAprovacao = descontoPct > descontoMaxPct && !role.approve;
 
   const reset = () => {
     setStep(1); setCliente(""); setDataEntrega(""); setItens([]); setProdSel(""); setQtd(1);
@@ -79,6 +93,7 @@ function Page() {
     mutationFn: async () => {
       // 1) cria venda
       const numero_venda = Date.now();
+      const statusVenda = precisaAprovacao ? "orcamento" : "aprovada";
       const { data: venda, error } = await supabase.from("vendas").insert({
         empresa_id: empresaId!,
         cliente_id: cliente_id || null,
@@ -88,7 +103,9 @@ function Page() {
         parcelas,
         valor_entrada,
         data_entrega: data_entrega || null,
-        status: "aprovada",
+        status: statusVenda,
+        vendedor_id: user?.id ?? null,
+        comissao_pct: comissaoPadraoPct,
       } as any).select("id").single();
       if (error) throw error;
 
@@ -124,9 +141,9 @@ function Page() {
         await supabase.from("parcelas_receber").insert(rows as any);
       }
 
-      // 5) caixa: entrada à vista ou entrada inicial
+      // 5) caixa: entrada à vista ou entrada inicial (só se aprovada)
       const valorCaixa = parcelas > 1 ? valor_entrada : total;
-      if (valorCaixa > 0) {
+      if (valorCaixa > 0 && statusVenda === "aprovada") {
         await supabase.from("movimentacoes_caixa").insert({
           empresa_id: empresaId!,
           tipo: "entrada",
@@ -137,12 +154,13 @@ function Page() {
           referencia_id: venda!.id,
         } as any);
       }
+      return { statusVenda };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["vendas"] });
       qc.invalidateQueries({ queryKey: ["produtos-sel"] });
       qc.invalidateQueries({ queryKey: ["produtos"] });
-      toast.success("Venda registrada");
+      toast.success(res?.statusVenda === "orcamento" ? "Enviada para aprovação do gerente (desconto acima do limite)" : "Venda registrada");
       setOpen(false); reset();
     },
     onError: (e: any) => toast.error(e.message),
@@ -283,10 +301,15 @@ function Page() {
               </div>
               <div className="rounded-md border p-3 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatarMoeda(subtotal)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Desconto</span><span>− {formatarMoeda(desconto)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Desconto ({descontoPct.toFixed(1)}%)</span><span>− {formatarMoeda(desconto)}</span></div>
                 <div className="flex justify-between text-base"><strong>Total</strong><strong>{formatarMoeda(total)}</strong></div>
                 {parcelas > 1 && (
                   <div className="flex justify-between text-muted-foreground"><span>{parcelas}x de</span><span>{formatarMoeda((total - valor_entrada) / parcelas)}</span></div>
+                )}
+                {precisaAprovacao && (
+                  <div className="mt-2 rounded-md bg-amber-100 text-amber-900 px-2 py-1 text-xs">
+                    Desconto acima do permitido ({descontoMaxPct}%). A venda será enviada para aprovação do gerente.
+                  </div>
                 )}
               </div>
             </div>
