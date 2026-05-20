@@ -31,18 +31,17 @@ function Page() {
     queryKey: ["rel-emp", empresaAtiva?.id, de, ate],
     enabled: !!empresaAtiva?.id,
     queryFn: async () => {
-      const [vendas, itens, parc, cp, mov] = await Promise.all([
+      const [vendas, parc, cp, mov] = await Promise.all([
         supabase.from("vendas").select("id, total, subtotal, desconto, status, created_at").eq("empresa_id", empresaAtiva!.id),
-        supabase.from("itens_venda").select("venda_id, nome_produto, quantidade, total, preco_unitario, produto_id").in("venda_id", []),
         supabase.from("parcelas_receber").select("valor, valor_pago, status, data_vencimento, data_pagamento").eq("empresa_id", empresaAtiva!.id),
         supabase.from("contas_pagar").select("valor, status, data_vencimento, data_pagamento, categoria").eq("empresa_id", empresaAtiva!.id),
         supabase.from("movimentacoes_caixa").select("tipo, valor, categoria, data_movimentacao").eq("empresa_id", empresaAtiva!.id),
       ]);
       const vendaIds = (vendas.data ?? []).map((v: any) => v.id);
-      const itensReais = vendaIds.length
-        ? await supabase.from("itens_venda").select("venda_id, nome_produto, quantidade, total").in("venda_id", vendaIds)
-        : { data: [] as any[] };
-      return { vendas: vendas.data ?? [], itens: itensReais.data ?? [], parc: parc.data ?? [], cp: cp.data ?? [], mov: mov.data ?? [], _itensIgnorado: itens };
+      const itens = vendaIds.length
+        ? (await supabase.from("itens_venda").select("venda_id, nome_produto, quantidade, total").in("venda_id", vendaIds)).data ?? []
+        : [];
+      return { vendas: vendas.data ?? [], itens, parc: parc.data ?? [], cp: cp.data ?? [], mov: mov.data ?? [] };
     },
   });
 
