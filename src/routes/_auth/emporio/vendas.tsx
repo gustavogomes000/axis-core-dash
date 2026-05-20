@@ -141,7 +141,7 @@ function Page() {
   return (
     <div>
       <PageHeader title="Vendas" subtitle="Histórico e nova venda" action={
-        <Button onClick={() => { reset(); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />Nova venda</Button>
+        <RoleGate action="write"><Button onClick={() => { reset(); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />Nova venda</Button></RoleGate>
       } />
       <div className="bg-card rounded-lg border">
         <Table>
