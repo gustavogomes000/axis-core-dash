@@ -74,7 +74,7 @@ function ModuleSidebar({ groups }: { groups: NavGroup[] }) {
                   return (
                     <SidebarMenuItem key={it.url}>
                       <SidebarMenuButton asChild isActive={active || exact}>
-                        <Link to={it.url} className="flex items-center gap-2">
+                        <Link to={it.url} preload="intent" className="flex items-center gap-2">
                           <it.icon className="h-4 w-4" />
                           {!collapsed && <span>{it.title}</span>}
                         </Link>
