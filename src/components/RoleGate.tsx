@@ -15,6 +15,9 @@ export function hasPermission(papel: Papel | null, action: Action): boolean {
     admin:        { view: true, write: true,  delete: true,  approve: true,  config: true,  score: true  },
     gerente:      { view: true, write: true,  delete: true,  approve: true,  config: false, score: true  },
     operador:     { view: true, write: true,  delete: false, approve: false, config: false, score: false },
+    vendedor:     { view: true, write: true,  delete: false, approve: false, config: false, score: false },
+    caixa:        { view: true, write: true,  delete: false, approve: false, config: false, score: false },
+    estoquista:   { view: true, write: true,  delete: false, approve: false, config: false, score: false },
     visualizador: { view: true, write: false, delete: false, approve: false, config: false, score: false },
   };
   return M[papel][action];
