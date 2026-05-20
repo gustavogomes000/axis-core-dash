@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Pencil, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Upload } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ImportarCSVDialog } from "@/components/ImportarCSVDialog";
 import { formatarCPF, formatarTelefone, formatarMoeda, linkWhatsApp } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 
@@ -23,6 +24,7 @@ function Page() {
   const del = useDelete("clientes_factoring", ["clientes-fact"]);
   const [open, setOpen] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+  const [openCSV, setOpenCSV] = useState(false);
   const [busca, setBusca] = useState("");
   const [f, setF] = useState<typeof VAZIO>(VAZIO);
 
@@ -46,7 +48,12 @@ function Page() {
   return (
     <div>
       <PageHeader title="Clientes Factoring" action={
-        <RoleGate action="write"><Button onClick={novo}><Plus className="h-4 w-4 mr-2" />Novo cliente</Button></RoleGate>
+        <RoleGate action="write">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setOpenCSV(true)}><Upload className="h-4 w-4 mr-2" />Importar CSV</Button>
+            <Button onClick={novo}><Plus className="h-4 w-4 mr-2" />Novo cliente</Button>
+          </div>
+        </RoleGate>
       } />
       <div className="relative mb-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -93,6 +100,25 @@ function Page() {
         </DialogContent>
       </Dialog>
       <ConfirmDialog open={!!delId} onOpenChange={(v) => !v && setDelId(null)} title="Excluir cliente?" destructive onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }} />
+      <ImportarCSVDialog
+        open={openCSV}
+        onOpenChange={setOpenCSV}
+        titulo="Importar clientes Factoring"
+        tabela="clientes_factoring"
+        invalidate={["clientes-fact"]}
+        exemploNome="clientes_factoring_exemplo.csv"
+        exemploCSV={"nome,cpf,telefone,email,limite_credito,score_interno\nMaria Silva,12345678901,11987654321,maria@email.com,5000,70\nJoão Souza,,11912345678,,3000,50"}
+        campos={[
+          { key: "nome", label: "Nome", required: true },
+          { key: "cpf", label: "CPF", transform: (v) => v.replace(/\D/g, "") },
+          { key: "telefone", label: "Telefone", required: true, transform: (v) => v.replace(/\D/g, "") },
+          { key: "email", label: "Email" },
+          { key: "limite_credito", label: "Limite de crédito", transform: (v) => parseFloat(v.replace(",", ".")) || 0 },
+          { key: "score_interno", label: "Score (0-100)", transform: (v) => parseInt(v) || 0 },
+          { key: "profissao", label: "Profissão" },
+          { key: "renda_mensal", label: "Renda mensal", transform: (v) => parseFloat(v.replace(",", ".")) || 0 },
+        ]}
+      />
     </div>
   );
 }

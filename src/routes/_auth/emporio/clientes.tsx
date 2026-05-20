@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Pencil, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Upload } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ImportarCSVDialog } from "@/components/ImportarCSVDialog";
 import { formatarCPF, formatarTelefone, formatarMoeda, linkWhatsApp } from "@/lib/format";
 
 export const Route = createFileRoute("/_auth/emporio/clientes")({ component: Page });
@@ -22,6 +23,7 @@ function Page() {
   const del = useDelete("clientes_emporio", ["clientes-emp"]);
   const [open, setOpen] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+  const [openCSV, setOpenCSV] = useState(false);
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState<typeof VAZIO>(VAZIO);
 
@@ -45,7 +47,12 @@ function Page() {
   return (
     <div>
       <PageHeader title="Clientes" subtitle="Base de clientes do Empório" action={
-        <RoleGate action="write"><Button onClick={novo}><Plus className="h-4 w-4 mr-2" />Novo cliente</Button></RoleGate>
+        <RoleGate action="write">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setOpenCSV(true)}><Upload className="h-4 w-4 mr-2" />Importar CSV</Button>
+            <Button onClick={novo}><Plus className="h-4 w-4 mr-2" />Novo cliente</Button>
+          </div>
+        </RoleGate>
       } />
       <div className="relative mb-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -89,6 +96,25 @@ function Page() {
         </DialogContent>
       </Dialog>
       <ConfirmDialog open={!!delId} onOpenChange={(v) => !v && setDelId(null)} title="Excluir cliente?" destructive onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }} />
+      <ImportarCSVDialog
+        open={openCSV}
+        onOpenChange={setOpenCSV}
+        titulo="Importar clientes"
+        tabela="clientes_emporio"
+        invalidate={["clientes-emp"]}
+        exemploNome="clientes_emporio_exemplo.csv"
+        exemploCSV={"nome,cpf,telefone,email\nMaria Silva,12345678901,11987654321,maria@email.com\nJoão Souza,,11912345678,"}
+        campos={[
+          { key: "nome", label: "Nome", required: true },
+          { key: "cpf", label: "CPF", transform: (v) => v.replace(/\D/g, "") },
+          { key: "telefone", label: "Telefone", required: true, transform: (v) => v.replace(/\D/g, "") },
+          { key: "email", label: "Email" },
+          { key: "endereco", label: "Endereço" },
+          { key: "cidade", label: "Cidade" },
+          { key: "estado", label: "Estado (UF)", transform: (v) => v.toUpperCase().slice(0, 2) },
+          { key: "cep", label: "CEP", transform: (v) => v.replace(/\D/g, "") },
+        ]}
+      />
     </div>
   );
 }
