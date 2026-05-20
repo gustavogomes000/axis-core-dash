@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RoleGate } from "@/components/RoleGate";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useList, useUpsert, useDelete } from "@/hooks/useEmpresaData";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Search } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { formatarMoeda, formatarData } from "@/lib/format";
+import { RegistrarPagamentoDialog } from "@/components/RegistrarPagamentoDialog";
 
 export const Route = createFileRoute("/_auth/factoring/contas-pagar")({ component: Page });
 
@@ -21,11 +22,20 @@ function Page() {
   const del = useDelete("contas_pagar", ["cp-fact"]);
   const [open, setOpen] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+  const [pag, setPag] = useState<any>(null);
+  const [busca, setBusca] = useState("");
   const [f, setF] = useState({ descricao: "", valor: 0, data_vencimento: "", categoria: "outros" });
+
+  const filtradas = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return data;
+    return data.filter((c: any) => (c.descricao ?? "").toLowerCase().includes(q));
+  }, [data, busca]);
+  const totalAberto = data.filter((c: any) => c.status !== "pago").reduce((s: number, c: any) => s + Number(c.valor), 0);
 
   return (
     <div>
-      <PageHeader title="Contas a pagar" action={
+      <PageHeader title="Contas a pagar" subtitle={`${formatarMoeda(totalAberto)} em aberto`} action={
         <RoleGate action="write"><Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nova</Button></DialogTrigger>
           <DialogContent>
@@ -41,25 +51,42 @@ function Page() {
           </DialogContent>
         </Dialog></RoleGate>
       } />
+      <div className="relative mb-4 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input placeholder="Buscar conta..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
+      </div>
       <div className="bg-card rounded-lg border">
         <Table>
           <TableHeader><TableRow><TableHead>Descrição</TableHead><TableHead>Vencimento</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Valor</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
             {isLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Sem contas</TableCell></TableRow>}
-            {data.map((c: any) => (
+            {!isLoading && filtradas.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-10">Nenhuma conta cadastrada.</TableCell></TableRow>}
+            {filtradas.map((c: any) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.descricao}</TableCell>
                 <TableCell>{formatarData(c.data_vencimento)}</TableCell>
                 <TableCell><Badge variant={c.status === "pago" ? "default" : c.status === "atrasado" ? "destructive" : "secondary"}>{c.status}</Badge></TableCell>
                 <TableCell className="text-right font-medium">{formatarMoeda(c.valor)}</TableCell>
-                <TableCell><Button variant="ghost" size="icon" onClick={() => setDelId(c.id)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    {c.status !== "pago" && <Button size="sm" onClick={() => setPag(c)}><CheckCircle2 className="h-4 w-4 mr-1" />Pagar</Button>}
+                    <Button variant="ghost" size="icon" onClick={() => setDelId(c.id)} aria-label="Excluir"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
       <ConfirmDialog open={!!delId} onOpenChange={(v) => !v && setDelId(null)} title="Excluir conta?" destructive onConfirm={() => { if (delId) { del.mutate(delId); setDelId(null); } }} />
+      <RegistrarPagamentoDialog
+        open={!!pag} onOpenChange={(v) => !v && setPag(null)}
+        modo="pagar" tabela="contas_pagar"
+        registro={pag}
+        descricao={pag?.descricao ?? ""}
+        categoriaCaixa={pag?.categoria ?? "outros"}
+        invalidate={["cp-fact"]}
+      />
     </div>
   );
 }

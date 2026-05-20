@@ -1,20 +1,95 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useEmpresa } from "@/providers/EmpresaProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEmpresa } from "@/providers/EmpresaProvider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/emporio/configuracoes")({ component: Page });
 
 function Page() {
+  const qc = useQueryClient();
   const { empresaAtiva } = useEmpresa();
+  const empresaId = empresaAtiva?.id;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["config-emporio", empresaId],
+    enabled: !!empresaId,
+    queryFn: async () => {
+      const { data } = await supabase.from("config_emporio").select("*").eq("empresa_id", empresaId!).maybeSingle();
+      return data ?? null;
+    },
+  });
+
+  const [f, setF] = useState({
+    whatsapp_padrao: "",
+    prefixo_numero_venda: "EMP",
+    dias_vencimento_padrao: 30,
+    msg_orcamento: "",
+    msg_aprovacao: "",
+    msg_entrega: "",
+    msg_cobranca: "",
+    msg_aniversario: "",
+  });
+
+  useEffect(() => {
+    if (data) setF({
+      whatsapp_padrao: data.whatsapp_padrao ?? "",
+      prefixo_numero_venda: data.prefixo_numero_venda ?? "EMP",
+      dias_vencimento_padrao: data.dias_vencimento_padrao ?? 30,
+      msg_orcamento: data.msg_orcamento ?? "",
+      msg_aprovacao: data.msg_aprovacao ?? "",
+      msg_entrega: data.msg_entrega ?? "",
+      msg_cobranca: data.msg_cobranca ?? "",
+      msg_aniversario: data.msg_aniversario ?? "",
+    });
+  }, [data]);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const payload: any = { ...f, empresa_id: empresaId };
+      if (data?.id) payload.id = data.id;
+      const { error } = await supabase.from("config_emporio").upsert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["config-emporio"] }); toast.success("Configurações salvas"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   return (
     <div>
-      <PageHeader title="Configurações" />
-      <Card><CardContent className="p-6 space-y-2 text-sm">
-        <div><span className="text-muted-foreground">Empresa: </span><strong>{empresaAtiva?.nome}</strong></div>
-        <div><span className="text-muted-foreground">ID: </span><span className="font-mono">{empresaAtiva?.id}</span></div>
-        <p className="text-muted-foreground pt-2">Edite as configurações da empresa diretamente na tabela <code>config_emporio</code>.</p>
-      </CardContent></Card>
+      <PageHeader title="Configurações" subtitle="Personalize a operação do Empório" />
+      {isLoading ? (
+        <div className="text-muted-foreground">Carregando…</div>
+      ) : (
+        <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-6 max-w-3xl">
+          <Card><CardContent className="p-6 grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>WhatsApp padrão (com DDD)</Label><Input value={f.whatsapp_padrao} onChange={(e) => setF({ ...f, whatsapp_padrao: e.target.value })} placeholder="11999999999" /></div>
+            <div className="space-y-2"><Label>Prefixo nº de venda</Label><Input value={f.prefixo_numero_venda} onChange={(e) => setF({ ...f, prefixo_numero_venda: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Dias padrão p/ vencimento</Label><Input type="number" value={f.dias_vencimento_padrao} onChange={(e) => setF({ ...f, dias_vencimento_padrao: +e.target.value })} /></div>
+          </CardContent></Card>
+
+          <Card><CardContent className="p-6 space-y-4">
+            <div className="text-sm font-semibold">Mensagens automáticas</div>
+            <p className="text-xs text-muted-foreground">Use {"{cliente}"}, {"{valor}"}, {"{numero}"} como variáveis.</p>
+            <div className="space-y-2"><Label>Orçamento enviado</Label><Textarea rows={2} value={f.msg_orcamento} onChange={(e) => setF({ ...f, msg_orcamento: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Venda aprovada</Label><Textarea rows={2} value={f.msg_aprovacao} onChange={(e) => setF({ ...f, msg_aprovacao: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Entrega realizada</Label><Textarea rows={2} value={f.msg_entrega} onChange={(e) => setF({ ...f, msg_entrega: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Cobrança</Label><Textarea rows={2} value={f.msg_cobranca} onChange={(e) => setF({ ...f, msg_cobranca: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Aniversário</Label><Textarea rows={2} value={f.msg_aniversario} onChange={(e) => setF({ ...f, msg_aniversario: e.target.value })} /></div>
+          </CardContent></Card>
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar configurações"}</Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
