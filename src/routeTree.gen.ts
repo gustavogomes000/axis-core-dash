@@ -15,10 +15,19 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
 import { Route as AuthFactoringRouteImport } from './routes/_auth/factoring'
 import { Route as AuthEmporioRouteImport } from './routes/_auth/emporio'
 import { Route as AuthFactoringIndexRouteImport } from './routes/_auth/factoring/index'
 import { Route as AuthEmporioIndexRouteImport } from './routes/_auth/emporio/index'
+import { Route as AuthFactoringSimuladorRouteImport } from './routes/_auth/factoring/simulador'
+import { Route as AuthFactoringRelatorioRouteImport } from './routes/_auth/factoring/relatorio'
+import { Route as AuthFactoringParcelasRouteImport } from './routes/_auth/factoring/parcelas'
+import { Route as AuthFactoringInadimplentesRouteImport } from './routes/_auth/factoring/inadimplentes'
+import { Route as AuthFactoringEmprestimosRouteImport } from './routes/_auth/factoring/emprestimos'
+import { Route as AuthFactoringContasPagarRouteImport } from './routes/_auth/factoring/contas-pagar'
+import { Route as AuthFactoringConfiguracoesRouteImport } from './routes/_auth/factoring/configuracoes'
+import { Route as AuthFactoringClientesRouteImport } from './routes/_auth/factoring/clientes'
 import { Route as AuthEmporioVendasRouteImport } from './routes/_auth/emporio/vendas'
 import { Route as AuthEmporioProdutosRouteImport } from './routes/_auth/emporio/produtos'
 import { Route as AuthEmporioFluxoCaixaRouteImport } from './routes/_auth/emporio/fluxo-caixa'
@@ -57,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogoSlugRoute = CatalogoSlugRouteImport.update({
+  id: '/catalogo/$slug',
+  path: '/catalogo/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthFactoringRoute = AuthFactoringRouteImport.update({
   id: '/factoring',
   path: '/factoring',
@@ -76,6 +90,50 @@ const AuthEmporioIndexRoute = AuthEmporioIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthEmporioRoute,
+} as any)
+const AuthFactoringSimuladorRoute = AuthFactoringSimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
+  getParentRoute: () => AuthFactoringRoute,
+} as any)
+const AuthFactoringRelatorioRoute = AuthFactoringRelatorioRouteImport.update({
+  id: '/relatorio',
+  path: '/relatorio',
+  getParentRoute: () => AuthFactoringRoute,
+} as any)
+const AuthFactoringParcelasRoute = AuthFactoringParcelasRouteImport.update({
+  id: '/parcelas',
+  path: '/parcelas',
+  getParentRoute: () => AuthFactoringRoute,
+} as any)
+const AuthFactoringInadimplentesRoute =
+  AuthFactoringInadimplentesRouteImport.update({
+    id: '/inadimplentes',
+    path: '/inadimplentes',
+    getParentRoute: () => AuthFactoringRoute,
+  } as any)
+const AuthFactoringEmprestimosRoute =
+  AuthFactoringEmprestimosRouteImport.update({
+    id: '/emprestimos',
+    path: '/emprestimos',
+    getParentRoute: () => AuthFactoringRoute,
+  } as any)
+const AuthFactoringContasPagarRoute =
+  AuthFactoringContasPagarRouteImport.update({
+    id: '/contas-pagar',
+    path: '/contas-pagar',
+    getParentRoute: () => AuthFactoringRoute,
+  } as any)
+const AuthFactoringConfiguracoesRoute =
+  AuthFactoringConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthFactoringRoute,
+  } as any)
+const AuthFactoringClientesRoute = AuthFactoringClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AuthFactoringRoute,
 } as any)
 const AuthEmporioVendasRoute = AuthEmporioVendasRouteImport.update({
   id: '/vendas',
@@ -128,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
   '/emporio': typeof AuthEmporioRouteWithChildren
   '/factoring': typeof AuthFactoringRouteWithChildren
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
   '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
@@ -136,6 +195,14 @@ export interface FileRoutesByFullPath {
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/vendas': typeof AuthEmporioVendasRoute
+  '/factoring/clientes': typeof AuthFactoringClientesRoute
+  '/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
+  '/factoring/contas-pagar': typeof AuthFactoringContasPagarRoute
+  '/factoring/emprestimos': typeof AuthFactoringEmprestimosRoute
+  '/factoring/inadimplentes': typeof AuthFactoringInadimplentesRoute
+  '/factoring/parcelas': typeof AuthFactoringParcelasRoute
+  '/factoring/relatorio': typeof AuthFactoringRelatorioRoute
+  '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio/': typeof AuthEmporioIndexRoute
   '/factoring/': typeof AuthFactoringIndexRoute
 }
@@ -145,6 +212,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
   '/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
@@ -153,6 +221,14 @@ export interface FileRoutesByTo {
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/vendas': typeof AuthEmporioVendasRoute
+  '/factoring/clientes': typeof AuthFactoringClientesRoute
+  '/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
+  '/factoring/contas-pagar': typeof AuthFactoringContasPagarRoute
+  '/factoring/emprestimos': typeof AuthFactoringEmprestimosRoute
+  '/factoring/inadimplentes': typeof AuthFactoringInadimplentesRoute
+  '/factoring/parcelas': typeof AuthFactoringParcelasRoute
+  '/factoring/relatorio': typeof AuthFactoringRelatorioRoute
+  '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio': typeof AuthEmporioIndexRoute
   '/factoring': typeof AuthFactoringIndexRoute
 }
@@ -166,6 +242,7 @@ export interface FileRoutesById {
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
   '/_auth/emporio': typeof AuthEmporioRouteWithChildren
   '/_auth/factoring': typeof AuthFactoringRouteWithChildren
+  '/catalogo/$slug': typeof CatalogoSlugRoute
   '/_auth/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/_auth/emporio/clientes': typeof AuthEmporioClientesRoute
   '/_auth/emporio/configuracoes': typeof AuthEmporioConfiguracoesRoute
@@ -174,6 +251,14 @@ export interface FileRoutesById {
   '/_auth/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
   '/_auth/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/_auth/emporio/vendas': typeof AuthEmporioVendasRoute
+  '/_auth/factoring/clientes': typeof AuthFactoringClientesRoute
+  '/_auth/factoring/configuracoes': typeof AuthFactoringConfiguracoesRoute
+  '/_auth/factoring/contas-pagar': typeof AuthFactoringContasPagarRoute
+  '/_auth/factoring/emprestimos': typeof AuthFactoringEmprestimosRoute
+  '/_auth/factoring/inadimplentes': typeof AuthFactoringInadimplentesRoute
+  '/_auth/factoring/parcelas': typeof AuthFactoringParcelasRoute
+  '/_auth/factoring/relatorio': typeof AuthFactoringRelatorioRoute
+  '/_auth/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/_auth/emporio/': typeof AuthEmporioIndexRoute
   '/_auth/factoring/': typeof AuthFactoringIndexRoute
 }
@@ -187,6 +272,7 @@ export interface FileRouteTypes {
     | '/selecionar-empresa'
     | '/emporio'
     | '/factoring'
+    | '/catalogo/$slug'
     | '/emporio/catalogo'
     | '/emporio/clientes'
     | '/emporio/configuracoes'
@@ -195,6 +281,14 @@ export interface FileRouteTypes {
     | '/emporio/fluxo-caixa'
     | '/emporio/produtos'
     | '/emporio/vendas'
+    | '/factoring/clientes'
+    | '/factoring/configuracoes'
+    | '/factoring/contas-pagar'
+    | '/factoring/emprestimos'
+    | '/factoring/inadimplentes'
+    | '/factoring/parcelas'
+    | '/factoring/relatorio'
+    | '/factoring/simulador'
     | '/emporio/'
     | '/factoring/'
   fileRoutesByTo: FileRoutesByTo
@@ -204,6 +298,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/selecionar-empresa'
+    | '/catalogo/$slug'
     | '/emporio/catalogo'
     | '/emporio/clientes'
     | '/emporio/configuracoes'
@@ -212,6 +307,14 @@ export interface FileRouteTypes {
     | '/emporio/fluxo-caixa'
     | '/emporio/produtos'
     | '/emporio/vendas'
+    | '/factoring/clientes'
+    | '/factoring/configuracoes'
+    | '/factoring/contas-pagar'
+    | '/factoring/emprestimos'
+    | '/factoring/inadimplentes'
+    | '/factoring/parcelas'
+    | '/factoring/relatorio'
+    | '/factoring/simulador'
     | '/emporio'
     | '/factoring'
   id:
@@ -224,6 +327,7 @@ export interface FileRouteTypes {
     | '/selecionar-empresa'
     | '/_auth/emporio'
     | '/_auth/factoring'
+    | '/catalogo/$slug'
     | '/_auth/emporio/catalogo'
     | '/_auth/emporio/clientes'
     | '/_auth/emporio/configuracoes'
@@ -232,6 +336,14 @@ export interface FileRouteTypes {
     | '/_auth/emporio/fluxo-caixa'
     | '/_auth/emporio/produtos'
     | '/_auth/emporio/vendas'
+    | '/_auth/factoring/clientes'
+    | '/_auth/factoring/configuracoes'
+    | '/_auth/factoring/contas-pagar'
+    | '/_auth/factoring/emprestimos'
+    | '/_auth/factoring/inadimplentes'
+    | '/_auth/factoring/parcelas'
+    | '/_auth/factoring/relatorio'
+    | '/_auth/factoring/simulador'
     | '/_auth/emporio/'
     | '/_auth/factoring/'
   fileRoutesById: FileRoutesById
@@ -243,6 +355,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SelecionarEmpresaRoute: typeof SelecionarEmpresaRoute
+  CatalogoSlugRoute: typeof CatalogoSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -289,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalogo/$slug': {
+      id: '/catalogo/$slug'
+      path: '/catalogo/$slug'
+      fullPath: '/catalogo/$slug'
+      preLoaderRoute: typeof CatalogoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_auth/factoring': {
       id: '/_auth/factoring'
       path: '/factoring'
@@ -316,6 +436,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/emporio/'
       preLoaderRoute: typeof AuthEmporioIndexRouteImport
       parentRoute: typeof AuthEmporioRoute
+    }
+    '/_auth/factoring/simulador': {
+      id: '/_auth/factoring/simulador'
+      path: '/simulador'
+      fullPath: '/factoring/simulador'
+      preLoaderRoute: typeof AuthFactoringSimuladorRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/relatorio': {
+      id: '/_auth/factoring/relatorio'
+      path: '/relatorio'
+      fullPath: '/factoring/relatorio'
+      preLoaderRoute: typeof AuthFactoringRelatorioRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/parcelas': {
+      id: '/_auth/factoring/parcelas'
+      path: '/parcelas'
+      fullPath: '/factoring/parcelas'
+      preLoaderRoute: typeof AuthFactoringParcelasRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/inadimplentes': {
+      id: '/_auth/factoring/inadimplentes'
+      path: '/inadimplentes'
+      fullPath: '/factoring/inadimplentes'
+      preLoaderRoute: typeof AuthFactoringInadimplentesRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/emprestimos': {
+      id: '/_auth/factoring/emprestimos'
+      path: '/emprestimos'
+      fullPath: '/factoring/emprestimos'
+      preLoaderRoute: typeof AuthFactoringEmprestimosRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/contas-pagar': {
+      id: '/_auth/factoring/contas-pagar'
+      path: '/contas-pagar'
+      fullPath: '/factoring/contas-pagar'
+      preLoaderRoute: typeof AuthFactoringContasPagarRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/configuracoes': {
+      id: '/_auth/factoring/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/factoring/configuracoes'
+      preLoaderRoute: typeof AuthFactoringConfiguracoesRouteImport
+      parentRoute: typeof AuthFactoringRoute
+    }
+    '/_auth/factoring/clientes': {
+      id: '/_auth/factoring/clientes'
+      path: '/clientes'
+      fullPath: '/factoring/clientes'
+      preLoaderRoute: typeof AuthFactoringClientesRouteImport
+      parentRoute: typeof AuthFactoringRoute
     }
     '/_auth/emporio/vendas': {
       id: '/_auth/emporio/vendas'
@@ -405,10 +581,26 @@ const AuthEmporioRouteWithChildren = AuthEmporioRoute._addFileChildren(
 )
 
 interface AuthFactoringRouteChildren {
+  AuthFactoringClientesRoute: typeof AuthFactoringClientesRoute
+  AuthFactoringConfiguracoesRoute: typeof AuthFactoringConfiguracoesRoute
+  AuthFactoringContasPagarRoute: typeof AuthFactoringContasPagarRoute
+  AuthFactoringEmprestimosRoute: typeof AuthFactoringEmprestimosRoute
+  AuthFactoringInadimplentesRoute: typeof AuthFactoringInadimplentesRoute
+  AuthFactoringParcelasRoute: typeof AuthFactoringParcelasRoute
+  AuthFactoringRelatorioRoute: typeof AuthFactoringRelatorioRoute
+  AuthFactoringSimuladorRoute: typeof AuthFactoringSimuladorRoute
   AuthFactoringIndexRoute: typeof AuthFactoringIndexRoute
 }
 
 const AuthFactoringRouteChildren: AuthFactoringRouteChildren = {
+  AuthFactoringClientesRoute: AuthFactoringClientesRoute,
+  AuthFactoringConfiguracoesRoute: AuthFactoringConfiguracoesRoute,
+  AuthFactoringContasPagarRoute: AuthFactoringContasPagarRoute,
+  AuthFactoringEmprestimosRoute: AuthFactoringEmprestimosRoute,
+  AuthFactoringInadimplentesRoute: AuthFactoringInadimplentesRoute,
+  AuthFactoringParcelasRoute: AuthFactoringParcelasRoute,
+  AuthFactoringRelatorioRoute: AuthFactoringRelatorioRoute,
+  AuthFactoringSimuladorRoute: AuthFactoringSimuladorRoute,
   AuthFactoringIndexRoute: AuthFactoringIndexRoute,
 }
 
@@ -435,7 +627,18 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SelecionarEmpresaRoute: SelecionarEmpresaRoute,
+  CatalogoSlugRoute: CatalogoSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
