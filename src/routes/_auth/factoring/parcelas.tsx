@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { formatarMoeda, formatarData } from "@/lib/format";
+import { formatarMoeda, formatarData, linkWhatsApp } from "@/lib/format";
 import { calcularMultaMora, diasAtraso } from "@/lib/finance";
 import { toast } from "sonner";
+import { MessageCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/factoring/parcelas")({ component: Page });
 
@@ -24,9 +25,14 @@ function Page() {
     queryKey: ["parcelas-emp", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      const { data } = await supabase.from("parcelas_emprestimo").select("*, emprestimos(numero_contrato, clientes_factoring(nome))").eq("empresa_id", empresaId!).order("data_vencimento");
+      const { data } = await supabase.from("parcelas_emprestimo").select("*, emprestimos(numero_contrato, clientes_factoring(nome, telefone))").eq("empresa_id", empresaId!).order("data_vencimento");
       return data ?? [];
     },
+  });
+  const { data: cfg } = useQuery({
+    queryKey: ["config_factoring", empresaId],
+    enabled: !!empresaId,
+    queryFn: async () => (await supabase.from("config_factoring").select("msg_cobranca").eq("empresa_id", empresaId!).maybeSingle()).data,
   });
   const [pay, setPay] = useState<any>(null);
   const [valor, setValor] = useState(0);
@@ -62,6 +68,20 @@ function Page() {
     setValor(total); setDp(new Date().toISOString().slice(0, 10)); setPay(p);
   };
 
+  const cobrar = (p: any) => {
+    const tel = p.emprestimos?.clientes_factoring?.telefone;
+    if (!tel) return;
+    const template = cfg?.msg_cobranca ?? "Olá {cliente}, parcela {numero}/{total} do contrato {contrato} no valor de {valor} vence em {vencimento}.";
+    const msg = template
+      .replace("{cliente}", p.emprestimos?.clientes_factoring?.nome ?? "")
+      .replace("{contrato}", p.emprestimos?.numero_contrato ?? "")
+      .replace("{numero}", String(p.numero_parcela))
+      .replace("{total}", String(p.total_parcelas))
+      .replace("{valor}", formatarMoeda(p.valor))
+      .replace("{vencimento}", formatarData(p.data_vencimento));
+    window.open(linkWhatsApp(tel, msg), "_blank");
+  };
+
   return (
     <div>
       <PageHeader title="Parcelas" subtitle="Todos os vencimentos" />
@@ -79,7 +99,18 @@ function Page() {
                 <TableCell>{formatarData(p.data_vencimento)}</TableCell>
                 <TableCell><Badge variant={p.status === "pago" ? "default" : p.status === "atrasado" ? "destructive" : "secondary"}>{p.status}</Badge></TableCell>
                 <TableCell className="text-right">{formatarMoeda(p.valor)}</TableCell>
-                <TableCell>{p.status !== "pago" && <Button size="sm" onClick={() => openPay(p)}>Pagar</Button>}</TableCell>
+                <TableCell>
+                  {p.status !== "pago" && (
+                    <div className="flex justify-end gap-1">
+                      {p.emprestimos?.clientes_factoring?.telefone && (
+                        <Button size="sm" variant="outline" onClick={() => cobrar(p)} title="Cobrar via WhatsApp">
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={() => openPay(p)}>Pagar</Button>
+                    </div>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

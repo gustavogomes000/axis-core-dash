@@ -12,9 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2 } from "lucide-react";
-import { formatarMoeda, formatarData } from "@/lib/format";
+import { Plus, Trash2, Receipt, MessageCircle } from "lucide-react";
+import { formatarMoeda, formatarData, linkWhatsApp } from "@/lib/format";
 import { addMeses } from "@/lib/finance";
+import { abrirRecibo, textoReciboWhatsApp, type DadosRecibo } from "@/lib/recibo";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/emporio/vendas")({ component: Page });
@@ -30,7 +31,7 @@ function Page() {
     queryKey: ["vendas", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      const { data } = await supabase.from("vendas").select("*, clientes_emporio(nome)").eq("empresa_id", empresaId!).order("created_at", { ascending: false });
+      const { data } = await supabase.from("vendas").select("*, clientes_emporio(nome, telefone), itens_venda(*)").eq("empresa_id", empresaId!).order("created_at", { ascending: false });
       return data ?? [];
     },
   });
@@ -97,7 +98,15 @@ function Page() {
       );
       if (errI) throw errI;
 
-      // 3) parcelas a receber (se parcelado)
+      // 3) baixa de estoque
+      for (const it of itens) {
+        const prod = produtos.find((x: any) => x.id === it.produto_id);
+        if (!prod) continue;
+        const novo = Math.max(0, Number(prod.estoque ?? 0) - it.quantidade);
+        await supabase.from("produtos").update({ estoque: novo } as any).eq("id", it.produto_id);
+      }
+
+      // 4) parcelas a receber (se parcelado)
       const aReceber = total - valor_entrada;
       if (parcelas > 1 && aReceber > 0) {
         const valorParcela = Math.round((aReceber / parcelas) * 100) / 100;
@@ -115,7 +124,7 @@ function Page() {
         await supabase.from("parcelas_receber").insert(rows as any);
       }
 
-      // 4) caixa: entrada à vista ou entrada inicial
+      // 5) caixa: entrada à vista ou entrada inicial
       const valorCaixa = parcelas > 1 ? valor_entrada : total;
       if (valorCaixa > 0) {
         await supabase.from("movimentacoes_caixa").insert({
@@ -132,11 +141,37 @@ function Page() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendas"] });
       qc.invalidateQueries({ queryKey: ["produtos-sel"] });
+      qc.invalidateQueries({ queryKey: ["produtos"] });
       toast.success("Venda registrada");
       setOpen(false); reset();
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const montarRecibo = (v: any): DadosRecibo => ({
+    empresa: empresaAtiva?.nome ?? "Empório",
+    numero: v.numero_venda,
+    data: v.created_at,
+    cliente: v.clientes_emporio?.nome ?? null,
+    itens: (v.itens_venda ?? []).map((i: any) => ({
+      nome_produto: i.nome_produto,
+      quantidade: i.quantidade,
+      preco_unitario: Number(i.preco_unitario),
+      total: Number(i.total),
+    })),
+    subtotal: Number(v.subtotal ?? 0),
+    desconto: Number(v.desconto ?? 0),
+    total: Number(v.total ?? 0),
+    forma_pagamento: v.tipo_pagamento,
+    parcelas: v.parcelas,
+    observacoes: v.observacoes,
+  });
+
+  const enviarWhatsApp = (v: any) => {
+    const tel = v.clientes_emporio?.telefone;
+    if (!tel) { toast.error("Cliente sem telefone cadastrado"); return; }
+    window.open(linkWhatsApp(tel, textoReciboWhatsApp(montarRecibo(v))), "_blank");
+  };
 
   return (
     <div>
@@ -145,10 +180,10 @@ function Page() {
       } />
       <div className="bg-card rounded-lg border">
         <Table>
-          <TableHeader><TableRow><TableHead>Nº</TableHead><TableHead>Cliente</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Pagto</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Nº</TableHead><TableHead>Cliente</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Pagto</TableHead><TableHead className="w-32" /></TableRow></TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Sem vendas</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Sem vendas</TableCell></TableRow>}
             {data.map((v: any) => (
               <TableRow key={v.id}>
                 <TableCell className="font-mono">#{v.numero_venda}</TableCell>
@@ -157,6 +192,12 @@ function Page() {
                 <TableCell><Badge variant={v.status === "aprovada" ? "default" : "secondary"}>{v.status}</Badge></TableCell>
                 <TableCell className="text-right font-medium">{formatarMoeda(v.total)}</TableCell>
                 <TableCell className="text-muted-foreground">{v.tipo_pagamento ?? "—"}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button size="icon" variant="ghost" title="Recibo" onClick={() => abrirRecibo(montarRecibo(v))}><Receipt className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" title="Enviar WhatsApp" onClick={() => enviarWhatsApp(v)}><MessageCircle className="h-4 w-4" /></Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
