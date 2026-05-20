@@ -99,7 +99,7 @@ function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center ml-1">
                     <Label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Senha</Label>
-                    <Link to="/esqueci-senha" tabindex="-1" className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-secondary transition-colors">
+                    <Link to="/esqueci-senha" tabIndex={-1} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-secondary transition-colors">
                       Esqueci
                     </Link>
                   </div>
