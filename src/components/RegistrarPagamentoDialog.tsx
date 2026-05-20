@@ -52,19 +52,24 @@ export function RegistrarPagamentoDialog({ open, onOpenChange, modo, tabela, reg
 
   const mut = useMutation({
     mutationFn: async () => {
+      const valorOriginal = Number(registro.valor ?? 0);
+      const valorAcumulado = Number(registro.valor_pago ?? 0) + valor;
+      const quitou = valorAcumulado + 0.005 >= valorOriginal;
       const patch: any = {
-        status: "pago",
-        valor_pago: valor,
-        data_pagamento,
+        valor_pago: valorAcumulado,
         tipo_pagamento,
       };
+      if (quitou) {
+        patch.status = "pago";
+        patch.data_pagamento = data_pagamento;
+      }
       const { error } = await (supabase as any).from(tabela).update(patch).eq("id", registro.id);
       if (error) throw error;
       await supabase.from("movimentacoes_caixa").insert({
         empresa_id: registro.empresa_id,
         tipo: modo === "receber" ? "entrada" : "saida",
         categoria: categoriaCaixa,
-        descricao,
+        descricao: quitou ? descricao : `${descricao} (parcial)`,
         valor,
         referencia_tipo: tabela,
         referencia_id: registro.id,
@@ -74,7 +79,9 @@ export function RegistrarPagamentoDialog({ open, onOpenChange, modo, tabela, reg
     onSuccess: () => {
       invalidate.forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
       qc.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-      toast.success(modo === "receber" ? "Recebimento registrado" : "Pagamento registrado");
+      const total = Number(registro.valor ?? 0);
+      const acum = Number(registro.valor_pago ?? 0) + valor;
+      toast.success(acum + 0.005 >= total ? (modo === "receber" ? "Quitado" : "Pago integralmente") : "Pagamento parcial registrado");
       onOpenChange(false);
     },
     onError: (e: any) => toast.error(e.message ?? "Erro ao registrar"),
@@ -82,6 +89,8 @@ export function RegistrarPagamentoDialog({ open, onOpenChange, modo, tabela, reg
 
   if (!registro) return null;
   const titulo = modo === "receber" ? "Registrar recebimento" : "Registrar pagamento";
+  const jaPago = Number(registro.valor_pago ?? 0);
+  const saldo = Math.max(0, Number(registro.valor ?? 0) - jaPago);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,6 +101,7 @@ export function RegistrarPagamentoDialog({ open, onOpenChange, modo, tabela, reg
             {descricao}
             {registro.data_vencimento && <> · venc. {formatarData(registro.data_vencimento)}</>}
             {" · "}valor original {formatarMoeda(Number(registro.valor ?? 0))}
+            {jaPago > 0 && <> · já pago {formatarMoeda(jaPago)} · saldo {formatarMoeda(saldo)}</>}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
