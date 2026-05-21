@@ -32,6 +32,7 @@ import { Route as AuthEmporioVendasRouteImport } from './routes/_auth/emporio/ve
 import { Route as AuthEmporioUsuariosRouteImport } from './routes/_auth/emporio/usuarios'
 import { Route as AuthEmporioRelatorioRouteImport } from './routes/_auth/emporio/relatorio'
 import { Route as AuthEmporioProdutosRouteImport } from './routes/_auth/emporio/produtos'
+import { Route as AuthEmporioPerfilLojaRouteImport } from './routes/_auth/emporio/perfil-loja'
 import { Route as AuthEmporioFluxoCaixaRouteImport } from './routes/_auth/emporio/fluxo-caixa'
 import { Route as AuthEmporioEntregasRouteImport } from './routes/_auth/emporio/entregas'
 import { Route as AuthEmporioContasReceberRouteImport } from './routes/_auth/emporio/contas-receber'
@@ -41,6 +42,7 @@ import { Route as AuthEmporioComissoesRouteImport } from './routes/_auth/emporio
 import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
 import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
 import { Route as AuthFactoringEmprestimosIdRouteImport } from './routes/_auth/factoring/emprestimos.$id'
+import { Route as AuthEmporioVendedorCatalogoRouteImport } from './routes/_auth/emporio/vendedor.catalogo'
 
 const SelecionarEmpresaRoute = SelecionarEmpresaRouteImport.update({
   id: '/selecionar-empresa',
@@ -160,6 +162,11 @@ const AuthEmporioProdutosRoute = AuthEmporioProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
+const AuthEmporioPerfilLojaRoute = AuthEmporioPerfilLojaRouteImport.update({
+  id: '/perfil-loja',
+  path: '/perfil-loja',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 const AuthEmporioFluxoCaixaRoute = AuthEmporioFluxoCaixaRouteImport.update({
   id: '/fluxo-caixa',
   path: '/fluxo-caixa',
@@ -208,6 +215,12 @@ const AuthFactoringEmprestimosIdRoute =
     path: '/$id',
     getParentRoute: () => AuthFactoringEmprestimosRoute,
   } as any)
+const AuthEmporioVendedorCatalogoRoute =
+  AuthEmporioVendedorCatalogoRouteImport.update({
+    id: '/vendedor/catalogo',
+    path: '/vendedor/catalogo',
+    getParentRoute: () => AuthEmporioRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -226,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
   '/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
+  '/emporio/perfil-loja': typeof AuthEmporioPerfilLojaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/relatorio': typeof AuthEmporioRelatorioRoute
   '/emporio/usuarios': typeof AuthEmporioUsuariosRoute
@@ -240,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio/': typeof AuthEmporioIndexRoute
   '/factoring/': typeof AuthFactoringIndexRoute
+  '/emporio/vendedor/catalogo': typeof AuthEmporioVendedorCatalogoRoute
   '/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRoutesByTo {
@@ -257,6 +272,7 @@ export interface FileRoutesByTo {
   '/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
   '/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
+  '/emporio/perfil-loja': typeof AuthEmporioPerfilLojaRoute
   '/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/emporio/relatorio': typeof AuthEmporioRelatorioRoute
   '/emporio/usuarios': typeof AuthEmporioUsuariosRoute
@@ -271,6 +287,7 @@ export interface FileRoutesByTo {
   '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio': typeof AuthEmporioIndexRoute
   '/factoring': typeof AuthFactoringIndexRoute
+  '/emporio/vendedor/catalogo': typeof AuthEmporioVendedorCatalogoRoute
   '/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRoutesById {
@@ -292,6 +309,7 @@ export interface FileRoutesById {
   '/_auth/emporio/contas-receber': typeof AuthEmporioContasReceberRoute
   '/_auth/emporio/entregas': typeof AuthEmporioEntregasRoute
   '/_auth/emporio/fluxo-caixa': typeof AuthEmporioFluxoCaixaRoute
+  '/_auth/emporio/perfil-loja': typeof AuthEmporioPerfilLojaRoute
   '/_auth/emporio/produtos': typeof AuthEmporioProdutosRoute
   '/_auth/emporio/relatorio': typeof AuthEmporioRelatorioRoute
   '/_auth/emporio/usuarios': typeof AuthEmporioUsuariosRoute
@@ -306,6 +324,7 @@ export interface FileRoutesById {
   '/_auth/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/_auth/emporio/': typeof AuthEmporioIndexRoute
   '/_auth/factoring/': typeof AuthFactoringIndexRoute
+  '/_auth/emporio/vendedor/catalogo': typeof AuthEmporioVendedorCatalogoRoute
   '/_auth/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRouteTypes {
@@ -327,6 +346,7 @@ export interface FileRouteTypes {
     | '/emporio/contas-receber'
     | '/emporio/entregas'
     | '/emporio/fluxo-caixa'
+    | '/emporio/perfil-loja'
     | '/emporio/produtos'
     | '/emporio/relatorio'
     | '/emporio/usuarios'
@@ -341,6 +361,7 @@ export interface FileRouteTypes {
     | '/factoring/simulador'
     | '/emporio/'
     | '/factoring/'
+    | '/emporio/vendedor/catalogo'
     | '/factoring/emprestimos/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -358,6 +379,7 @@ export interface FileRouteTypes {
     | '/emporio/contas-receber'
     | '/emporio/entregas'
     | '/emporio/fluxo-caixa'
+    | '/emporio/perfil-loja'
     | '/emporio/produtos'
     | '/emporio/relatorio'
     | '/emporio/usuarios'
@@ -372,6 +394,7 @@ export interface FileRouteTypes {
     | '/factoring/simulador'
     | '/emporio'
     | '/factoring'
+    | '/emporio/vendedor/catalogo'
     | '/factoring/emprestimos/$id'
   id:
     | '__root__'
@@ -392,6 +415,7 @@ export interface FileRouteTypes {
     | '/_auth/emporio/contas-receber'
     | '/_auth/emporio/entregas'
     | '/_auth/emporio/fluxo-caixa'
+    | '/_auth/emporio/perfil-loja'
     | '/_auth/emporio/produtos'
     | '/_auth/emporio/relatorio'
     | '/_auth/emporio/usuarios'
@@ -406,6 +430,7 @@ export interface FileRouteTypes {
     | '/_auth/factoring/simulador'
     | '/_auth/emporio/'
     | '/_auth/factoring/'
+    | '/_auth/emporio/vendedor/catalogo'
     | '/_auth/factoring/emprestimos/$id'
   fileRoutesById: FileRoutesById
 }
@@ -582,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioProdutosRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/emporio/perfil-loja': {
+      id: '/_auth/emporio/perfil-loja'
+      path: '/perfil-loja'
+      fullPath: '/emporio/perfil-loja'
+      preLoaderRoute: typeof AuthEmporioPerfilLojaRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
     '/_auth/emporio/fluxo-caixa': {
       id: '/_auth/emporio/fluxo-caixa'
       path: '/fluxo-caixa'
@@ -645,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthFactoringEmprestimosIdRouteImport
       parentRoute: typeof AuthFactoringEmprestimosRoute
     }
+    '/_auth/emporio/vendedor/catalogo': {
+      id: '/_auth/emporio/vendedor/catalogo'
+      path: '/vendedor/catalogo'
+      fullPath: '/emporio/vendedor/catalogo'
+      preLoaderRoute: typeof AuthEmporioVendedorCatalogoRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
   }
 }
 
@@ -657,11 +696,13 @@ interface AuthEmporioRouteChildren {
   AuthEmporioContasReceberRoute: typeof AuthEmporioContasReceberRoute
   AuthEmporioEntregasRoute: typeof AuthEmporioEntregasRoute
   AuthEmporioFluxoCaixaRoute: typeof AuthEmporioFluxoCaixaRoute
+  AuthEmporioPerfilLojaRoute: typeof AuthEmporioPerfilLojaRoute
   AuthEmporioProdutosRoute: typeof AuthEmporioProdutosRoute
   AuthEmporioRelatorioRoute: typeof AuthEmporioRelatorioRoute
   AuthEmporioUsuariosRoute: typeof AuthEmporioUsuariosRoute
   AuthEmporioVendasRoute: typeof AuthEmporioVendasRoute
   AuthEmporioIndexRoute: typeof AuthEmporioIndexRoute
+  AuthEmporioVendedorCatalogoRoute: typeof AuthEmporioVendedorCatalogoRoute
 }
 
 const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
@@ -673,11 +714,13 @@ const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
   AuthEmporioContasReceberRoute: AuthEmporioContasReceberRoute,
   AuthEmporioEntregasRoute: AuthEmporioEntregasRoute,
   AuthEmporioFluxoCaixaRoute: AuthEmporioFluxoCaixaRoute,
+  AuthEmporioPerfilLojaRoute: AuthEmporioPerfilLojaRoute,
   AuthEmporioProdutosRoute: AuthEmporioProdutosRoute,
   AuthEmporioRelatorioRoute: AuthEmporioRelatorioRoute,
   AuthEmporioUsuariosRoute: AuthEmporioUsuariosRoute,
   AuthEmporioVendasRoute: AuthEmporioVendasRoute,
   AuthEmporioIndexRoute: AuthEmporioIndexRoute,
+  AuthEmporioVendedorCatalogoRoute: AuthEmporioVendedorCatalogoRoute,
 }
 
 const AuthEmporioRouteWithChildren = AuthEmporioRoute._addFileChildren(

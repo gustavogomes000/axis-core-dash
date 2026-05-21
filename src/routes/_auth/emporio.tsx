@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { AppShell, type NavItem } from "@/components/AppShell";
-import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3, Truck, Trophy, UserCog } from "lucide-react";
+import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3, Truck, Trophy, UserCog, Store, MessageCircle } from "lucide-react";
 import { useRole, type Perms } from "@/hooks/useRole";
 
 type Item = NavItem & { needs?: keyof Perms };
@@ -13,7 +13,9 @@ const ALL_ITEMS: Item[] = [
   { title: "Entregas", url: "/emporio/entregas", icon: Truck, needs: "gerirEntrega" },
   { title: "Produtos", url: "/emporio/produtos", icon: Package, needs: "editarProduto" },
   { title: "Clientes", url: "/emporio/clientes", icon: Users },
-  { title: "Catálogo", url: "/emporio/catalogo", icon: BookOpen },
+  { title: "Catálogo público", url: "/emporio/catalogo", icon: BookOpen },
+  { title: "Catálogo do vendedor", url: "/emporio/vendedor/catalogo", icon: MessageCircle, needs: "venderProdutos" },
+  { title: "Perfil da loja", url: "/emporio/perfil-loja", icon: Store, needs: "config" },
   { title: "Entradas e saídas", url: "/emporio/fluxo-caixa", icon: Wallet, needs: "verFinanceiro" },
   { title: "A receber", url: "/emporio/contas-receber", icon: FilePlus, needs: "verFinanceiro" },
   { title: "A pagar", url: "/emporio/contas-pagar", icon: FileMinus, needs: "verFinanceiro" },
