@@ -330,6 +330,22 @@ function Page() {
     window.open(linkWhatsApp(tel, textoReciboWhatsApp(montarRecibo(v))), "_blank");
   };
 
+  const enviarOrcamentoWhatsApp = (v: any) => {
+    const tel = v.clientes_emporio?.telefone;
+    if (!tel) { toast.error("Cliente sem telefone cadastrado"); return; }
+    const template = (cfg as any)?.msg_orcamento ||
+      "Olá {nome}! Segue seu orçamento #{numero} no valor de {total}. Validade: {validade}.";
+    const msg = aplicarTemplate(template, {
+      nome: v.clientes_emporio?.nome ?? "cliente",
+      numero: v.numero_venda,
+      total: formatarMoeda(Number(v.total ?? 0)),
+      validade: v.validade_orcamento ? formatarData(v.validade_orcamento) : "—",
+      empresa: empresaAtiva?.nome ?? "",
+    });
+    const link = gerarLinkWhatsApp(tel, msg);
+    if (link) window.open(link, "_blank");
+  };
+
   return (
     <div>
       <PageHeader title="Vendas" subtitle="Histórico e nova venda" action={
