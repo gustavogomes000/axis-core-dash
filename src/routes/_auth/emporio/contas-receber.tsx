@@ -48,7 +48,20 @@ function Page() {
 
   return (
     <div>
-      <PageHeader title="Contas a receber" subtitle={`Parcelas das vendas · ${formatarMoeda(totalPendente)} em aberto`} />
+      <PageHeader title="Contas a receber" subtitle={`Parcelas das vendas · ${formatarMoeda(totalPendente)} em aberto`} help={{
+        storageKey: "help.contas-receber.v1",
+        oQueE: "Todas as parcelas que clientes têm para pagar. Aqui você marca como recebido e cobra quem está atrasado.",
+        passos: [
+          "Veja as parcelas pendentes na lista — as vencidas aparecem em destaque.",
+          "Quando o cliente pagar, clique em 'Registrar pagamento'.",
+          "Escolha a forma de pagamento e confirme — o caixa é atualizado sozinho.",
+          "Use o WhatsApp para cobrar quem está atrasado com a mensagem padrão.",
+        ],
+        dicas: [
+          "Multa e juros de atraso são calculados automaticamente conforme as Configurações.",
+          "Filtre por cliente para ver o que ele deve no total.",
+        ],
+      }} />
       <div className="relative mb-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Buscar parcela..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
