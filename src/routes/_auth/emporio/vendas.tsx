@@ -379,7 +379,11 @@ function Page() {
                       </>
                     )}
                     <Button size="icon" variant="ghost" title="Recibo" onClick={() => abrirRecibo(montarRecibo(v))}><Receipt className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" title="Enviar WhatsApp" onClick={() => enviarWhatsApp(v)}><MessageCircle className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost"
+                      title={v.status === "orcamento" ? "Enviar orçamento WhatsApp" : "Enviar recibo WhatsApp"}
+                      onClick={() => v.status === "orcamento" ? enviarOrcamentoWhatsApp(v) : enviarWhatsApp(v)}>
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
