@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,14 +21,15 @@ const slugify = (s: string) =>
 
 function Page() {
   const qc = useQueryClient();
-  const { empresaAtiva } = useEmpresa();
+  const { empresaAtiva, loading: empresaLoading } = useEmpresa();
   const empresaId = empresaAtiva?.id;
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError, error, refetch } = useQuery({
     queryKey: ["config-catalogo", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      const { data } = await supabase.from("config_catalogo").select("*").eq("empresa_id", empresaId!).maybeSingle();
+      const { data, error } = await supabase.from("config_catalogo").select("*").eq("empresa_id", empresaId!).maybeSingle();
+      if (error) throw error;
       return data;
     },
   });
@@ -37,8 +38,9 @@ function Page() {
     queryKey: ["catalogo-count", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      const { count } = await supabase.from("produtos").select("id", { count: "exact", head: true })
+      const { count, error } = await supabase.from("produtos").select("id", { count: "exact", head: true })
         .eq("empresa_id", empresaId!).eq("disponivel_catalogo", true).eq("status", "ativo");
+      if (error) throw error;
       return count ?? 0;
     },
   });
@@ -95,7 +97,8 @@ function Page() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const url = form.slug ? `${window.location.origin}/catalogo/${slugify(form.slug)}` : null;
+  const url = form.slug && typeof window !== "undefined" ? `${window.location.origin}/catalogo/${slugify(form.slug)}` : null;
+  const carregando = empresaLoading || (!!empresaId && isFetching);
 
   return (
     <div className="space-y-4">
@@ -128,7 +131,18 @@ function Page() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          {!empresaId || isFetching ? <div className="text-muted-foreground text-sm">Carregando…</div> : (
+          {carregando ? <div className="text-muted-foreground text-sm">Carregando…</div> : !empresaId ? (
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>Nenhuma empresa do Empório está ativa nesta sessão.</p>
+              <Button asChild variant="outline" size="sm"><Link to="/selecionar-empresa">Selecionar empresa</Link></Button>
+            </div>
+          ) : isError ? (
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>Não foi possível carregar as configurações do catálogo.</p>
+              <p className="text-xs">{error instanceof Error ? error.message : "Erro inesperado"}</p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>Tentar novamente</Button>
+            </div>
+          ) : (
             <>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
