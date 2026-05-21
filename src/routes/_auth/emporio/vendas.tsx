@@ -422,7 +422,10 @@ function Page() {
             {step < 3 ? (
               <Button type="button" onClick={() => setStep(step + 1)} disabled={step === 2 && itens.length === 0}>Avançar</Button>
             ) : (
-              <Button type="button" onClick={() => create.mutate()} disabled={create.isPending || itens.length === 0}>Finalizar</Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => create.mutate({ comoOrcamento: true })} disabled={create.isPending || itens.length === 0}>Salvar orçamento</Button>
+                <Button type="button" onClick={() => create.mutate({})} disabled={create.isPending || itens.length === 0}>Finalizar venda</Button>
+              </div>
             )}
           </DialogFooter>
         </DialogContent>
