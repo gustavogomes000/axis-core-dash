@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Receipt, MessageCircle } from "lucide-react";
+import { Plus, Trash2, Receipt, MessageCircle, Check, X } from "lucide-react";
 import { formatarMoeda, formatarData, linkWhatsApp } from "@/lib/format";
 import { addMeses } from "@/lib/finance";
 import { abrirRecibo, textoReciboWhatsApp, type DadosRecibo } from "@/lib/recibo";
@@ -57,7 +57,11 @@ function Page() {
     enabled: !!empresaId,
     queryFn: async () => (await supabase.from("config_emporio").select("*").eq("empresa_id", empresaId!).maybeSingle()).data,
   });
-  const descontoMaxPct = Number((cfg as any)?.desconto_max_sem_aprovacao ?? 10);
+  const limitesPorPapel = ((cfg as any)?.desconto_max_por_papel ?? {}) as Record<string, number>;
+  const fallbackMax = Number((cfg as any)?.desconto_max_sem_aprovacao ?? 10);
+  const descontoMaxPct = role.papel
+    ? Number(limitesPorPapel[role.papel] ?? fallbackMax)
+    : 0;
   const comissaoPadraoPct = Number((cfg as any)?.comissao_padrao_pct ?? 0);
 
   const [open, setOpen] = useState(false);
@@ -75,7 +79,7 @@ function Page() {
   const subtotal = itens.reduce((s, i) => s + i.total, 0);
   const total = Math.max(0, subtotal - desconto);
   const descontoPct = subtotal > 0 ? (desconto / subtotal) * 100 : 0;
-  const precisaAprovacao = descontoPct > descontoMaxPct && !role.approve;
+  const precisaAprovacao = descontoPct > descontoMaxPct;
 
   const reset = () => {
     setStep(1); setCliente(""); setDataEntrega(""); setItens([]); setProdSel(""); setQtd(1);
@@ -166,6 +170,62 @@ function Page() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [rejeitarId, setRejeitarId] = useState<string | null>(null);
+  const [motivoRejeicao, setMotivoRejeicao] = useState("");
+
+  const aprovar = useMutation({
+    mutationFn: async (v: any) => {
+      const { error } = await supabase
+        .from("vendas")
+        .update({ status: "aprovada", aprovado_por: user?.id ?? null, aprovado_em: new Date().toISOString() } as any)
+        .eq("id", v.id);
+      if (error) throw error;
+      const valorCaixa = (v.parcelas ?? 1) > 1 ? Number(v.valor_entrada ?? 0) : Number(v.total ?? 0);
+      if (valorCaixa > 0) {
+        await supabase.from("movimentacoes_caixa").insert({
+          empresa_id: empresaId!,
+          tipo: "entrada",
+          categoria: "venda",
+          descricao: `Venda #${v.numero_venda} (aprovada)`,
+          valor: valorCaixa,
+          referencia_tipo: "venda",
+          referencia_id: v.id,
+        } as any);
+      }
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["vendas"] }); toast.success("Venda aprovada"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const rejeitar = useMutation({
+    mutationFn: async () => {
+      if (!rejeitarId) return;
+      const venda = data.find((v: any) => v.id === rejeitarId);
+      const { error } = await supabase
+        .from("vendas")
+        .update({ status: "cancelada", motivo_rejeicao: motivoRejeicao || "Sem motivo informado", aprovado_por: user?.id ?? null, aprovado_em: new Date().toISOString() } as any)
+        .eq("id", rejeitarId);
+      if (error) throw error;
+      // devolve estoque
+      for (const it of venda?.itens_venda ?? []) {
+        if (!it.produto_id) continue;
+        const { data: p } = await supabase.from("produtos").select("estoque").eq("id", it.produto_id).maybeSingle();
+        const atual = Number((p as any)?.estoque ?? 0);
+        await supabase.from("produtos").update({ estoque: atual + Number(it.quantidade ?? 0) } as any).eq("id", it.produto_id);
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vendas"] });
+      qc.invalidateQueries({ queryKey: ["produtos-sel"] });
+      qc.invalidateQueries({ queryKey: ["produtos"] });
+      toast.success("Venda rejeitada e estoque devolvido");
+      setRejeitarId(null); setMotivoRejeicao("");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const pendentes = (data as any[]).filter((v) => v.status === "orcamento");
+
   const montarRecibo = (v: any): DadosRecibo => ({
     empresa: empresaAtiva?.nome ?? "Empório",
     numero: v.numero_venda,
@@ -196,6 +256,11 @@ function Page() {
       <PageHeader title="Vendas" subtitle="Histórico e nova venda" action={
         <RoleGate action="write"><Button onClick={() => { reset(); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />Nova venda</Button></RoleGate>
       } />
+      {role.approve && pendentes.length > 0 && (
+        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <strong>{pendentes.length}</strong> venda(s) pendente(s) de aprovação por desconto acima do limite.
+        </div>
+      )}
       <div className="bg-card rounded-lg border">
         <Table>
           <TableHeader><TableRow><TableHead>Nº</TableHead><TableHead>Cliente</TableHead><TableHead>Data</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Total</TableHead><TableHead>Pagto</TableHead><TableHead className="w-32" /></TableRow></TableHeader>
@@ -212,6 +277,12 @@ function Page() {
                 <TableCell className="text-muted-foreground">{v.tipo_pagamento ?? "—"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    {v.status === "orcamento" && role.approve && (
+                      <>
+                        <Button size="icon" variant="ghost" title="Aprovar" onClick={() => aprovar.mutate(v)} disabled={aprovar.isPending}><Check className="h-4 w-4 text-green-600" /></Button>
+                        <Button size="icon" variant="ghost" title="Rejeitar" onClick={() => { setRejeitarId(v.id); setMotivoRejeicao(""); }}><X className="h-4 w-4 text-red-600" /></Button>
+                      </>
+                    )}
                     <Button size="icon" variant="ghost" title="Recibo" onClick={() => abrirRecibo(montarRecibo(v))}><Receipt className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" title="Enviar WhatsApp" onClick={() => enviarWhatsApp(v)}><MessageCircle className="h-4 w-4" /></Button>
                   </div>
@@ -221,6 +292,21 @@ function Page() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!rejeitarId} onOpenChange={(v) => { if (!v) { setRejeitarId(null); setMotivoRejeicao(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Rejeitar venda</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <Label>Motivo da rejeição</Label>
+            <Input value={motivoRejeicao} onChange={(e) => setMotivoRejeicao(e.target.value)} placeholder="Ex.: desconto excessivo sem justificativa" />
+            <p className="text-xs text-muted-foreground">O estoque será devolvido automaticamente.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRejeitarId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => rejeitar.mutate()} disabled={rejeitar.isPending}>Confirmar rejeição</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
         <DialogContent className="max-w-2xl">
