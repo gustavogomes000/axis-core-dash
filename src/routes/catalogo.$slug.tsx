@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { formatarMoeda, linkWhatsApp } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Instagram, Facebook } from "lucide-react";
-import { getCatalogoPublico } from "@/lib/catalogo-publico.functions";
 
 export const Route = createFileRoute("/catalogo/$slug")({
   component: Page,
@@ -24,7 +24,39 @@ function Page() {
   const { slug } = Route.useParams();
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["catalogo", slug],
-    queryFn: () => getCatalogoPublico({ data: { slug } }),
+    queryFn: async () => {
+      const timeout = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("Tempo esgotado ao carregar o catálogo.")), 12_000);
+      });
+
+      return Promise.race([
+        (async () => {
+          const { data: cfg, error: cfgError } = await supabase
+            .from("config_catalogo")
+            .select("empresa_id, slug, titulo, descricao, whatsapp, instagram, facebook, mostrar_preco, mostrar_estoque")
+            .eq("slug", slug)
+            .eq("ativo", true)
+            .maybeSingle();
+
+          if (cfgError) throw cfgError;
+          if (!cfg) return null;
+
+          const { data: produtos, error: produtosError } = await supabase
+            .from("produtos")
+            .select("id, nome, descricao_curta, preco, estoque, imagens, destaque")
+            .eq("empresa_id", cfg.empresa_id)
+            .eq("disponivel_catalogo", true)
+            .eq("status", "ativo")
+            .order("destaque", { ascending: false })
+            .order("nome")
+            .limit(200);
+
+          if (produtosError) throw produtosError;
+          return { cfg, produtos: produtos ?? [] };
+        })(),
+        timeout,
+      ]);
+    },
     retry: 1,
   });
 
