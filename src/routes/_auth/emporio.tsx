@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useEmpresa } from "@/providers/EmpresaProvider";
 import { AppShell, type NavItem } from "@/components/AppShell";
-import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3, Truck, Trophy, UserCog, Store, MessageCircle } from "lucide-react";
+import { LayoutDashboard, Package, Users, ShoppingCart, Wallet, Settings, BookOpen, FileMinus, FilePlus, BarChart3, Truck, Trophy, UserCog, Store, MessageCircle, HelpCircle } from "lucide-react";
 import { useRole, type Perms } from "@/hooks/useRole";
 
 type Item = NavItem & { needs?: keyof Perms };
@@ -23,6 +23,7 @@ const ALL_ITEMS: Item[] = [
   { title: "Relatório", url: "/emporio/relatorio", icon: BarChart3, needs: "verRelatorioDono" },
   { title: "Usuários", url: "/emporio/usuarios", icon: UserCog, needs: "gerirUsuarios" },
   { title: "Configurações", url: "/emporio/configuracoes", icon: Settings, needs: "config" },
+  { title: "Ajuda", url: "/emporio/ajuda", icon: HelpCircle },
 ];
 
 export const Route = createFileRoute("/_auth/emporio")({ component: Layout });
