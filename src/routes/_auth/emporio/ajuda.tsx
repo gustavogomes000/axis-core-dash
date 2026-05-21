@@ -29,7 +29,7 @@ const FAQ: Item[] = [
   { q: "Como gero um relatório financeiro?", a: "Relatório → escolha o período → Imprimir/PDF ou exportar CSV.", papeis: ["admin","gerente"], tags: ["relatorio"] },
 ];
 
-const ATALHOS = [
+const ATALHOS: { to: string; icon: any; label: string; need?: string }[] = [
   { to: "/emporio/vendas", icon: ShoppingCart, label: "Vendas e orçamentos", need: "venderProdutos" },
   { to: "/emporio/produtos", icon: Package, label: "Produtos", need: "editarProduto" },
   { to: "/emporio/clientes", icon: Users, label: "Clientes" },
@@ -39,7 +39,7 @@ const ATALHOS = [
   { to: "/emporio/catalogo", icon: BookOpen, label: "Catálogo público" },
   { to: "/emporio/vendedor/catalogo", icon: MessageCircle, label: "Catálogo do vendedor", need: "venderProdutos" },
   { to: "/emporio/perfil-loja", icon: Settings, label: "Perfil da loja", need: "config" },
-] as const;
+];
 
 function Page() {
   const role = useRole();
@@ -77,7 +77,7 @@ function Page() {
           {ATALHOS.filter((a) => !a.need || (role as any)[a.need]).map((a) => {
             const Icon = a.icon;
             return (
-              <Link key={a.to} to={a.to} className="flex items-center gap-2 p-3 rounded-lg border bg-card hover:bg-muted/60 transition text-sm">
+              <Link key={a.to} to={a.to as any} className="flex items-center gap-2 p-3 rounded-lg border bg-card hover:bg-muted/60 transition text-sm">
                 <Icon className="h-4 w-4 text-primary" />
                 <span>{a.label}</span>
               </Link>
