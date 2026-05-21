@@ -17,7 +17,7 @@ import { gerarLinkWhatsApp, aplicarTemplate } from "@/lib/whatsapp";
 export const Route = createFileRoute("/_auth/emporio/vendedor/catalogo")({ component: Page });
 
 function Page() {
-  const { empresaAtiva } = useEmpresa();
+  const { empresaAtiva, loading: empresaLoading } = useEmpresa();
   const empresaId = empresaAtiva?.id;
 
   const [busca, setBusca] = useState("");
@@ -43,16 +43,17 @@ function Page() {
     },
   });
 
-  const { data: produtos = [], isLoading } = useQuery({
+  const { data: produtos = [], isFetching, isError, refetch, error } = useQuery({
     queryKey: ["vendedor-produtos", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
-      const { data } = await supabase.from("produtos")
+      const { data, error } = await supabase.from("produtos")
         .select("id, nome, sku, preco, estoque, descricao_curta, imagens, categoria_id, destaque, status")
         .eq("empresa_id", empresaId!)
         .eq("status", "ativo")
         .order("destaque", { ascending: false })
         .order("nome");
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -115,9 +116,21 @@ function Page() {
         </CardContent>
       </Card>
 
-      {isLoading && <p className="text-muted-foreground">Carregando…</p>}
+      {(empresaLoading || (!!empresaId && isFetching)) && <p className="text-muted-foreground">Carregando…</p>}
 
-      {!isLoading && filtrados.length === 0 && (
+      {!empresaLoading && !empresaId && (
+        <Card><CardContent className="py-12 text-center text-muted-foreground">Selecione uma empresa para abrir o catálogo do vendedor.</CardContent></Card>
+      )}
+
+      {isError && (
+        <Card><CardContent className="py-8 text-center text-muted-foreground space-y-3">
+          <p>Não foi possível carregar os produtos.</p>
+          <p className="text-xs">{error instanceof Error ? error.message : "Erro inesperado"}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>Tentar novamente</Button>
+        </CardContent></Card>
+      )}
+
+      {!empresaLoading && !!empresaId && !isFetching && !isError && filtrados.length === 0 && (
         <Card><CardContent className="py-12 text-center text-muted-foreground">
           <Package className="h-10 w-10 mx-auto mb-3 opacity-50" />
           Nenhum produto encontrado com esses filtros.
