@@ -89,15 +89,25 @@ function Page() {
   const addItem = () => {
     const p = produtos.find((x: any) => x.id === prodSel);
     if (!p) return;
+    const estoque = Number(p.estoque ?? 0);
+    if (qtd > estoque) {
+      if (!role.approve) {
+        toast.error(`Sem estoque suficiente (${estoque} disponível). Solicite ao gerente.`);
+        return;
+      }
+      if (!window.confirm(`Estoque atual: ${estoque}. Confirmar venda de ${qtd} mesmo assim?`)) return;
+    }
     setItens([...itens, { produto_id: p.id, nome_produto: p.nome, sku_produto: p.sku, quantidade: qtd, preco_unitario: Number(p.preco), total: qtd * Number(p.preco) }]);
     setProdSel(""); setQtd(1);
   };
 
   const create = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts: { comoOrcamento?: boolean } = {}) => {
+      if (valor_entrada > total) throw new Error("Entrada não pode ser maior que o total");
+      if (parcelas > 1 && !cliente_id) throw new Error("Venda parcelada exige cliente cadastrado");
       // 1) cria venda
       const numero_venda = Date.now();
-      const statusVenda = precisaAprovacao ? "orcamento" : "aprovada";
+      const statusVenda = opts.comoOrcamento || precisaAprovacao ? "orcamento" : "aprovada";
       const { data: venda, error } = await supabase.from("vendas").insert({
         empresa_id: empresaId!,
         cliente_id: cliente_id || null,
@@ -120,7 +130,7 @@ function Page() {
       if (errI) throw errI;
 
       // 3) baixa de estoque
-      for (const it of itens) {
+      if (statusVenda === "aprovada") for (const it of itens) {
         const prod = produtos.find((x: any) => x.id === it.produto_id);
         if (!prod) continue;
         const novo = Math.max(0, Number(prod.estoque ?? 0) - it.quantidade);
@@ -129,7 +139,7 @@ function Page() {
 
       // 4) parcelas a receber (se parcelado)
       const aReceber = total - valor_entrada;
-      if (parcelas > 1 && aReceber > 0) {
+      if (parcelas > 1 && aReceber > 0 && statusVenda === "aprovada") {
         const valorParcela = Math.round((aReceber / parcelas) * 100) / 100;
         const base = new Date().toISOString().slice(0, 10);
         const rows = Array.from({ length: parcelas }, (_, k) => ({
@@ -158,13 +168,19 @@ function Page() {
           referencia_id: venda!.id,
         } as any);
       }
-      return { statusVenda };
+      return { statusVenda, comoOrcamento: !!opts.comoOrcamento };
     },
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["vendas"] });
       qc.invalidateQueries({ queryKey: ["produtos-sel"] });
       qc.invalidateQueries({ queryKey: ["produtos"] });
-      toast.success(res?.statusVenda === "orcamento" ? "Enviada para aprovação do gerente (desconto acima do limite)" : "Venda registrada");
+      toast.success(
+        res?.comoOrcamento
+          ? "Orçamento salvo (não baixou estoque)"
+          : res?.statusVenda === "orcamento"
+            ? "Enviada para aprovação do gerente (desconto acima do limite)"
+            : "Venda registrada",
+      );
       setOpen(false); reset();
     },
     onError: (e: any) => toast.error(e.message),
