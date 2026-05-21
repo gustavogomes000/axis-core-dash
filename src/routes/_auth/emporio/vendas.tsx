@@ -483,6 +483,7 @@ function Page() {
                 <div className="space-y-2"><Label>Parcelas</Label><Input type="number" min={1} value={parcelas} onChange={(e) => setParcelas(Math.max(1, +e.target.value || 1))} /></div>
                 <div className="space-y-2"><Label>Entrada (R$)</Label><Input type="number" step="0.01" value={valor_entrada} onChange={(e) => setEntrada(+e.target.value)} /></div>
                 <div className="space-y-2"><Label>Desconto (R$)</Label><Input type="number" step="0.01" value={desconto} onChange={(e) => setDesconto(+e.target.value)} /></div>
+                <div className="space-y-2"><Label>Validade orçamento</Label><Input type="date" value={validade_orcamento} onChange={(e) => setValidade(e.target.value)} /></div>
               </div>
               <div className="rounded-md border p-3 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatarMoeda(subtotal)}</span></div>
