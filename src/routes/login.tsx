@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,10 @@ function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [today, setToday] = useState<string>("");
+  useEffect(() => {
+    setToday(new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }));
+  }, []);
   const nav = useNavigate();
 
   const submit = async (e: React.FormEvent) => {
@@ -46,8 +50,8 @@ function LoginPage() {
           </span>
           Sistema operacional
         </div>
-        <div className="hidden sm:block text-[#0B1733]/50 font-medium">
-          v2.6 · {new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+        <div className="hidden sm:block text-[#0B1733]/50 font-medium" suppressHydrationWarning>
+          v2.6{today && ` · ${today}`}
         </div>
       </div>
 
@@ -218,7 +222,7 @@ function LoginPage() {
             </div>
 
             <p className="mt-8 text-[10px] uppercase tracking-[0.28em] text-[#0B1733]/35 text-center lg:text-left">
-              © {new Date().getFullYear()} Grupo SRSM · Todos os direitos reservados
+              © 2026 Grupo SRSM · Todos os direitos reservados
             </p>
           </div>
         </main>
