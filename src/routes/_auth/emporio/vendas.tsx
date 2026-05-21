@@ -18,6 +18,7 @@ import { Plus, Trash2, Receipt, MessageCircle, Check, X } from "lucide-react";
 import { formatarMoeda, formatarData, linkWhatsApp } from "@/lib/format";
 import { addMeses } from "@/lib/finance";
 import { abrirRecibo, textoReciboWhatsApp, type DadosRecibo } from "@/lib/recibo";
+import { aplicarTemplate, gerarLinkWhatsApp } from "@/lib/whatsapp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/emporio/vendas")({ component: Page });
@@ -75,6 +76,7 @@ function Page() {
   const [parcelas, setParcelas] = useState(1);
   const [valor_entrada, setEntrada] = useState(0);
   const [desconto, setDesconto] = useState(0);
+  const [validade_orcamento, setValidade] = useState<string>("");
 
   const subtotal = itens.reduce((s, i) => s + i.total, 0);
   const total = Math.max(0, subtotal - desconto);
@@ -83,7 +85,7 @@ function Page() {
 
   const reset = () => {
     setStep(1); setCliente(""); setDataEntrega(""); setItens([]); setProdSel(""); setQtd(1);
-    setTipo("pix"); setParcelas(1); setEntrada(0); setDesconto(0);
+    setTipo("pix"); setParcelas(1); setEntrada(0); setDesconto(0); setValidade("");
   };
 
   const addItem = () => {
@@ -117,6 +119,7 @@ function Page() {
         parcelas,
         valor_entrada,
         data_entrega: data_entrega || null,
+        validade_orcamento: opts.comoOrcamento && validade_orcamento ? validade_orcamento : null,
         status: statusVenda,
         vendedor_id: user?.id ?? null,
         comissao_pct: comissaoPadraoPct,
@@ -191,13 +194,61 @@ function Page() {
 
   const aprovar = useMutation({
     mutationFn: async (v: any) => {
+      // Detecta se o orçamento ainda não baixou estoque (não tem parcelas/caixa)
+      const { count: parcelasExistentes } = await supabase
+        .from("parcelas_receber").select("id", { count: "exact", head: true }).eq("venda_id", v.id);
+      const { count: caixaExistente } = await supabase
+        .from("movimentacoes_caixa").select("id", { count: "exact", head: true })
+        .eq("referencia_id", v.id).eq("referencia_tipo", "venda");
+      const precisaBaixarEstoque = (parcelasExistentes ?? 0) === 0 && (caixaExistente ?? 0) === 0;
+
+      // Revalida estoque antes de aprovar
+      if (precisaBaixarEstoque) {
+        for (const it of v.itens_venda ?? []) {
+          if (!it.produto_id) continue;
+          const { data: p } = await supabase.from("produtos").select("estoque, nome").eq("id", it.produto_id).maybeSingle();
+          const atual = Number((p as any)?.estoque ?? 0);
+          if (atual < Number(it.quantidade)) {
+            throw new Error(`Estoque insuficiente para "${(p as any)?.nome ?? it.nome_produto}" (atual: ${atual}, necessário: ${it.quantidade})`);
+          }
+        }
+      }
+
       const { error } = await supabase
         .from("vendas")
         .update({ status: "aprovada", aprovado_por: user?.id ?? null, aprovado_em: new Date().toISOString() } as any)
         .eq("id", v.id);
       if (error) throw error;
+
+      if (precisaBaixarEstoque) {
+        // baixa estoque
+        for (const it of v.itens_venda ?? []) {
+          if (!it.produto_id) continue;
+          const { data: p } = await supabase.from("produtos").select("estoque").eq("id", it.produto_id).maybeSingle();
+          const atual = Number((p as any)?.estoque ?? 0);
+          await supabase.from("produtos").update({ estoque: Math.max(0, atual - Number(it.quantidade)) } as any).eq("id", it.produto_id);
+        }
+        // cria parcelas se parcelado
+        const aReceber = Number(v.total ?? 0) - Number(v.valor_entrada ?? 0);
+        if ((v.parcelas ?? 1) > 1 && aReceber > 0) {
+          const valorParcela = Math.round((aReceber / v.parcelas) * 100) / 100;
+          const base = new Date().toISOString().slice(0, 10);
+          const rows = Array.from({ length: v.parcelas }, (_, k) => ({
+            empresa_id: empresaId!,
+            venda_id: v.id,
+            cliente_id: v.cliente_id || null,
+            numero_parcela: k + 1,
+            total_parcelas: v.parcelas,
+            valor: valorParcela,
+            data_vencimento: addMeses(base, k + 1),
+            status: "pendente",
+          }));
+          await supabase.from("parcelas_receber").insert(rows as any);
+        }
+      }
+
       const valorCaixa = (v.parcelas ?? 1) > 1 ? Number(v.valor_entrada ?? 0) : Number(v.total ?? 0);
-      if (valorCaixa > 0) {
+      if (valorCaixa > 0 && (caixaExistente ?? 0) === 0) {
         await supabase.from("movimentacoes_caixa").insert({
           empresa_id: empresaId!,
           tipo: "entrada",
@@ -209,7 +260,12 @@ function Page() {
         } as any);
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["vendas"] }); toast.success("Venda aprovada"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vendas"] });
+      qc.invalidateQueries({ queryKey: ["produtos-sel"] });
+      qc.invalidateQueries({ queryKey: ["produtos"] });
+      toast.success("Venda aprovada");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -222,7 +278,14 @@ function Page() {
         .update({ status: "cancelada", motivo_rejeicao: motivoRejeicao || "Sem motivo informado", aprovado_por: user?.id ?? null, aprovado_em: new Date().toISOString() } as any)
         .eq("id", rejeitarId);
       if (error) throw error;
-      // devolve estoque
+      // só devolve estoque se tinha sido baixado (existem parcelas ou caixa)
+      const { count: parcelasExistentes } = await supabase
+        .from("parcelas_receber").select("id", { count: "exact", head: true }).eq("venda_id", rejeitarId);
+      const { count: caixaExistente } = await supabase
+        .from("movimentacoes_caixa").select("id", { count: "exact", head: true })
+        .eq("referencia_id", rejeitarId).eq("referencia_tipo", "venda");
+      const tinhaBaixado = (parcelasExistentes ?? 0) > 0 || (caixaExistente ?? 0) > 0;
+      if (!tinhaBaixado) return;
       for (const it of venda?.itens_venda ?? []) {
         if (!it.produto_id) continue;
         const { data: p } = await supabase.from("produtos").select("estoque").eq("id", it.produto_id).maybeSingle();
@@ -267,6 +330,22 @@ function Page() {
     window.open(linkWhatsApp(tel, textoReciboWhatsApp(montarRecibo(v))), "_blank");
   };
 
+  const enviarOrcamentoWhatsApp = (v: any) => {
+    const tel = v.clientes_emporio?.telefone;
+    if (!tel) { toast.error("Cliente sem telefone cadastrado"); return; }
+    const template = (cfg as any)?.msg_orcamento ||
+      "Olá {nome}! Segue seu orçamento #{numero} no valor de {total}. Validade: {validade}.";
+    const msg = aplicarTemplate(template, {
+      nome: v.clientes_emporio?.nome ?? "cliente",
+      numero: v.numero_venda,
+      total: formatarMoeda(Number(v.total ?? 0)),
+      validade: v.validade_orcamento ? formatarData(v.validade_orcamento) : "—",
+      empresa: empresaAtiva?.nome ?? "",
+    });
+    const link = gerarLinkWhatsApp(tel, msg);
+    if (link) window.open(link, "_blank");
+  };
+
   return (
     <div>
       <PageHeader title="Vendas" subtitle="Histórico e nova venda" action={
@@ -300,7 +379,11 @@ function Page() {
                       </>
                     )}
                     <Button size="icon" variant="ghost" title="Recibo" onClick={() => abrirRecibo(montarRecibo(v))}><Receipt className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" title="Enviar WhatsApp" onClick={() => enviarWhatsApp(v)}><MessageCircle className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost"
+                      title={v.status === "orcamento" ? "Enviar orçamento WhatsApp" : "Enviar recibo WhatsApp"}
+                      onClick={() => v.status === "orcamento" ? enviarOrcamentoWhatsApp(v) : enviarWhatsApp(v)}>
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -400,6 +483,7 @@ function Page() {
                 <div className="space-y-2"><Label>Parcelas</Label><Input type="number" min={1} value={parcelas} onChange={(e) => setParcelas(Math.max(1, +e.target.value || 1))} /></div>
                 <div className="space-y-2"><Label>Entrada (R$)</Label><Input type="number" step="0.01" value={valor_entrada} onChange={(e) => setEntrada(+e.target.value)} /></div>
                 <div className="space-y-2"><Label>Desconto (R$)</Label><Input type="number" step="0.01" value={desconto} onChange={(e) => setDesconto(+e.target.value)} /></div>
+                <div className="space-y-2"><Label>Validade orçamento</Label><Input type="date" value={validade_orcamento} onChange={(e) => setValidade(e.target.value)} /></div>
               </div>
               <div className="rounded-md border p-3 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatarMoeda(subtotal)}</span></div>
