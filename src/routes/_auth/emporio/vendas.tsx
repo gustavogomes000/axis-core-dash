@@ -191,13 +191,61 @@ function Page() {
 
   const aprovar = useMutation({
     mutationFn: async (v: any) => {
+      // Detecta se o orçamento ainda não baixou estoque (não tem parcelas/caixa)
+      const { count: parcelasExistentes } = await supabase
+        .from("parcelas_receber").select("id", { count: "exact", head: true }).eq("venda_id", v.id);
+      const { count: caixaExistente } = await supabase
+        .from("movimentacoes_caixa").select("id", { count: "exact", head: true })
+        .eq("referencia_id", v.id).eq("referencia_tipo", "venda");
+      const precisaBaixarEstoque = (parcelasExistentes ?? 0) === 0 && (caixaExistente ?? 0) === 0;
+
+      // Revalida estoque antes de aprovar
+      if (precisaBaixarEstoque) {
+        for (const it of v.itens_venda ?? []) {
+          if (!it.produto_id) continue;
+          const { data: p } = await supabase.from("produtos").select("estoque, nome").eq("id", it.produto_id).maybeSingle();
+          const atual = Number((p as any)?.estoque ?? 0);
+          if (atual < Number(it.quantidade)) {
+            throw new Error(`Estoque insuficiente para "${(p as any)?.nome ?? it.nome_produto}" (atual: ${atual}, necessário: ${it.quantidade})`);
+          }
+        }
+      }
+
       const { error } = await supabase
         .from("vendas")
         .update({ status: "aprovada", aprovado_por: user?.id ?? null, aprovado_em: new Date().toISOString() } as any)
         .eq("id", v.id);
       if (error) throw error;
+
+      if (precisaBaixarEstoque) {
+        // baixa estoque
+        for (const it of v.itens_venda ?? []) {
+          if (!it.produto_id) continue;
+          const { data: p } = await supabase.from("produtos").select("estoque").eq("id", it.produto_id).maybeSingle();
+          const atual = Number((p as any)?.estoque ?? 0);
+          await supabase.from("produtos").update({ estoque: Math.max(0, atual - Number(it.quantidade)) } as any).eq("id", it.produto_id);
+        }
+        // cria parcelas se parcelado
+        const aReceber = Number(v.total ?? 0) - Number(v.valor_entrada ?? 0);
+        if ((v.parcelas ?? 1) > 1 && aReceber > 0) {
+          const valorParcela = Math.round((aReceber / v.parcelas) * 100) / 100;
+          const base = new Date().toISOString().slice(0, 10);
+          const rows = Array.from({ length: v.parcelas }, (_, k) => ({
+            empresa_id: empresaId!,
+            venda_id: v.id,
+            cliente_id: v.cliente_id || null,
+            numero_parcela: k + 1,
+            total_parcelas: v.parcelas,
+            valor: valorParcela,
+            data_vencimento: addMeses(base, k + 1),
+            status: "pendente",
+          }));
+          await supabase.from("parcelas_receber").insert(rows as any);
+        }
+      }
+
       const valorCaixa = (v.parcelas ?? 1) > 1 ? Number(v.valor_entrada ?? 0) : Number(v.total ?? 0);
-      if (valorCaixa > 0) {
+      if (valorCaixa > 0 && (caixaExistente ?? 0) === 0) {
         await supabase.from("movimentacoes_caixa").insert({
           empresa_id: empresaId!,
           tipo: "entrada",
@@ -209,7 +257,12 @@ function Page() {
         } as any);
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["vendas"] }); toast.success("Venda aprovada"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vendas"] });
+      qc.invalidateQueries({ queryKey: ["produtos-sel"] });
+      qc.invalidateQueries({ queryKey: ["produtos"] });
+      toast.success("Venda aprovada");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -222,7 +275,14 @@ function Page() {
         .update({ status: "cancelada", motivo_rejeicao: motivoRejeicao || "Sem motivo informado", aprovado_por: user?.id ?? null, aprovado_em: new Date().toISOString() } as any)
         .eq("id", rejeitarId);
       if (error) throw error;
-      // devolve estoque
+      // só devolve estoque se tinha sido baixado (existem parcelas ou caixa)
+      const { count: parcelasExistentes } = await supabase
+        .from("parcelas_receber").select("id", { count: "exact", head: true }).eq("venda_id", rejeitarId);
+      const { count: caixaExistente } = await supabase
+        .from("movimentacoes_caixa").select("id", { count: "exact", head: true })
+        .eq("referencia_id", rejeitarId).eq("referencia_tipo", "venda");
+      const tinhaBaixado = (parcelasExistentes ?? 0) > 0 || (caixaExistente ?? 0) > 0;
+      if (!tinhaBaixado) return;
       for (const it of venda?.itens_venda ?? []) {
         if (!it.produto_id) continue;
         const { data: p } = await supabase.from("produtos").select("estoque").eq("id", it.produto_id).maybeSingle();
