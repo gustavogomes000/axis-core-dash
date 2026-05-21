@@ -348,7 +348,23 @@ function Page() {
 
   return (
     <div>
-      <PageHeader title="Vendas" subtitle="Histórico e nova venda" action={
+      <PageHeader title="Vendas" subtitle="Histórico e nova venda" help={{
+        storageKey: "help.vendas.v1",
+        oQueE: "Aqui você registra cada venda da loja: escolhe o cliente, adiciona os produtos, define forma de pagamento e finaliza. Vendas em aberto ficam como orçamento até alguém aprovar.",
+        passos: [
+          "Clique em 'Nova venda' no canto superior direito.",
+          "Escolha o cliente (ou deixe 'Consumidor') e o vendedor.",
+          "Adicione os produtos clicando em + e ajuste a quantidade.",
+          "Informe desconto, forma de pagamento e parcelas, se houver.",
+          "Clique em 'Finalizar venda' para aprovar ou 'Salvar orçamento' se ainda não tem certeza.",
+          "Use o botão do WhatsApp na linha da venda para enviar o recibo ao cliente.",
+        ],
+        dicas: [
+          "Vendas sem estoque suficiente ficam como orçamento até o gerente aprovar.",
+          "Descontos acima do limite definido em Configurações também viram orçamento para aprovação.",
+          "Você pode cancelar uma venda aprovada — o estoque volta automaticamente.",
+        ],
+      }} action={
         <RoleGate action="write"><Button onClick={() => { reset(); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />Nova venda</Button></RoleGate>
       } />
       {role.approve && pendentes.length > 0 && (
