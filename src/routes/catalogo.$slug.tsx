@@ -22,24 +22,43 @@ export const Route = createFileRoute("/catalogo/$slug")({
 
 function Page() {
   const { slug } = Route.useParams();
-  const { data, isLoading } = useQuery({
+  const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["catalogo", slug],
     queryFn: async () => {
-      const { data: cfg } = await supabase.from("config_catalogo").select("*").eq("slug", slug).eq("ativo", true).maybeSingle();
+      const signal = AbortSignal.timeout(10_000);
+      const { data: cfg, error: cfgError } = await supabase
+        .from("config_catalogo")
+        .select("*")
+        .eq("slug", slug)
+        .eq("ativo", true)
+        .abortSignal(signal)
+        .maybeSingle();
+      if (cfgError) throw cfgError;
       if (!cfg) return null;
-      const { data: produtos } = await supabase
+      const { data: produtos, error: produtosError } = await supabase
         .from("produtos")
         .select("id, nome, descricao_curta, preco, estoque, imagens, destaque, disponivel_catalogo, status")
         .eq("empresa_id", cfg.empresa_id)
         .eq("disponivel_catalogo", true)
         .eq("status", "ativo")
         .order("destaque", { ascending: false })
-        .order("nome");
+        .order("nome")
+        .abortSignal(signal);
+      if (produtosError) throw produtosError;
       return { cfg, produtos: produtos ?? [] };
     },
   });
 
-  if (isLoading) return <div className="min-h-screen grid place-items-center text-muted-foreground">Carregando…</div>;
+  if (isPending) return <div className="min-h-screen grid place-items-center text-muted-foreground">Carregando…</div>;
+  if (isError) return (
+    <div className="min-h-screen grid place-items-center px-6 text-center">
+      <div>
+        <h1 className="text-2xl font-semibold">Não foi possível carregar o catálogo</h1>
+        <p className="text-muted-foreground mt-2">Verifique sua conexão e tente novamente.</p>
+        <Button className="mt-4" onClick={() => refetch()}>Tentar novamente</Button>
+      </div>
+    </div>
+  );
   if (!data) return (
     <div className="min-h-screen grid place-items-center px-6 text-center">
       <div>
