@@ -119,6 +119,7 @@ function Page() {
         parcelas,
         valor_entrada,
         data_entrega: data_entrega || null,
+        validade_orcamento: opts.comoOrcamento && validade_orcamento ? validade_orcamento : null,
         status: statusVenda,
         vendedor_id: user?.id ?? null,
         comissao_pct: comissaoPadraoPct,
