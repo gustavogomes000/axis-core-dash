@@ -18,6 +18,7 @@ import { Plus, Trash2, Receipt, MessageCircle, Check, X } from "lucide-react";
 import { formatarMoeda, formatarData, linkWhatsApp } from "@/lib/format";
 import { addMeses } from "@/lib/finance";
 import { abrirRecibo, textoReciboWhatsApp, type DadosRecibo } from "@/lib/recibo";
+import { aplicarTemplate, gerarLinkWhatsApp } from "@/lib/whatsapp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/emporio/vendas")({ component: Page });
@@ -75,6 +76,7 @@ function Page() {
   const [parcelas, setParcelas] = useState(1);
   const [valor_entrada, setEntrada] = useState(0);
   const [desconto, setDesconto] = useState(0);
+  const [validade_orcamento, setValidade] = useState<string>("");
 
   const subtotal = itens.reduce((s, i) => s + i.total, 0);
   const total = Math.max(0, subtotal - desconto);
@@ -83,7 +85,7 @@ function Page() {
 
   const reset = () => {
     setStep(1); setCliente(""); setDataEntrega(""); setItens([]); setProdSel(""); setQtd(1);
-    setTipo("pix"); setParcelas(1); setEntrada(0); setDesconto(0);
+    setTipo("pix"); setParcelas(1); setEntrada(0); setDesconto(0); setValidade("");
   };
 
   const addItem = () => {
