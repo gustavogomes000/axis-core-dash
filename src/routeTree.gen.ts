@@ -42,6 +42,7 @@ import { Route as AuthEmporioComissoesRouteImport } from './routes/_auth/emporio
 import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
 import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
 import { Route as AuthFactoringEmprestimosIdRouteImport } from './routes/_auth/factoring/emprestimos.$id'
+import { Route as AuthEmporioVendedorCatalogoRouteImport } from './routes/_auth/emporio/vendedor.catalogo'
 
 const SelecionarEmpresaRoute = SelecionarEmpresaRouteImport.update({
   id: '/selecionar-empresa',
@@ -214,6 +215,12 @@ const AuthFactoringEmprestimosIdRoute =
     path: '/$id',
     getParentRoute: () => AuthFactoringEmprestimosRoute,
   } as any)
+const AuthEmporioVendedorCatalogoRoute =
+  AuthEmporioVendedorCatalogoRouteImport.update({
+    id: '/vendedor/catalogo',
+    path: '/vendedor/catalogo',
+    getParentRoute: () => AuthEmporioRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio/': typeof AuthEmporioIndexRoute
   '/factoring/': typeof AuthFactoringIndexRoute
+  '/emporio/vendedor/catalogo': typeof AuthEmporioVendedorCatalogoRoute
   '/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRoutesByTo {
@@ -279,6 +287,7 @@ export interface FileRoutesByTo {
   '/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/emporio': typeof AuthEmporioIndexRoute
   '/factoring': typeof AuthFactoringIndexRoute
+  '/emporio/vendedor/catalogo': typeof AuthEmporioVendedorCatalogoRoute
   '/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRoutesById {
@@ -315,6 +324,7 @@ export interface FileRoutesById {
   '/_auth/factoring/simulador': typeof AuthFactoringSimuladorRoute
   '/_auth/emporio/': typeof AuthEmporioIndexRoute
   '/_auth/factoring/': typeof AuthFactoringIndexRoute
+  '/_auth/emporio/vendedor/catalogo': typeof AuthEmporioVendedorCatalogoRoute
   '/_auth/factoring/emprestimos/$id': typeof AuthFactoringEmprestimosIdRoute
 }
 export interface FileRouteTypes {
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/factoring/simulador'
     | '/emporio/'
     | '/factoring/'
+    | '/emporio/vendedor/catalogo'
     | '/factoring/emprestimos/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/factoring/simulador'
     | '/emporio'
     | '/factoring'
+    | '/emporio/vendedor/catalogo'
     | '/factoring/emprestimos/$id'
   id:
     | '__root__'
@@ -418,6 +430,7 @@ export interface FileRouteTypes {
     | '/_auth/factoring/simulador'
     | '/_auth/emporio/'
     | '/_auth/factoring/'
+    | '/_auth/emporio/vendedor/catalogo'
     | '/_auth/factoring/emprestimos/$id'
   fileRoutesById: FileRoutesById
 }
@@ -664,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthFactoringEmprestimosIdRouteImport
       parentRoute: typeof AuthFactoringEmprestimosRoute
     }
+    '/_auth/emporio/vendedor/catalogo': {
+      id: '/_auth/emporio/vendedor/catalogo'
+      path: '/vendedor/catalogo'
+      fullPath: '/emporio/vendedor/catalogo'
+      preLoaderRoute: typeof AuthEmporioVendedorCatalogoRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
   }
 }
 
@@ -682,6 +702,7 @@ interface AuthEmporioRouteChildren {
   AuthEmporioUsuariosRoute: typeof AuthEmporioUsuariosRoute
   AuthEmporioVendasRoute: typeof AuthEmporioVendasRoute
   AuthEmporioIndexRoute: typeof AuthEmporioIndexRoute
+  AuthEmporioVendedorCatalogoRoute: typeof AuthEmporioVendedorCatalogoRoute
 }
 
 const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
@@ -699,6 +720,7 @@ const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
   AuthEmporioUsuariosRoute: AuthEmporioUsuariosRoute,
   AuthEmporioVendasRoute: AuthEmporioVendasRoute,
   AuthEmporioIndexRoute: AuthEmporioIndexRoute,
+  AuthEmporioVendedorCatalogoRoute: AuthEmporioVendedorCatalogoRoute,
 }
 
 const AuthEmporioRouteWithChildren = AuthEmporioRoute._addFileChildren(
