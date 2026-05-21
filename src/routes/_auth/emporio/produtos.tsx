@@ -49,7 +49,21 @@ function Page() {
 
   return (
     <div>
-      <PageHeader title="Produtos" subtitle="Catálogo da loja" action={
+      <PageHeader title="Produtos" subtitle="Catálogo da loja" help={{
+        storageKey: "help.produtos.v1",
+        oQueE: "Cadastro de tudo que a loja vende. Cada produto tem nome, preço, estoque e pode aparecer no catálogo online.",
+        passos: [
+          "Clique em 'Novo produto' para cadastrar.",
+          "Preencha nome, preço de venda e quantidade em estoque.",
+          "Defina o estoque mínimo para ser avisado quando estiver acabando.",
+          "Marque 'Disponível no catálogo' se quiser que o cliente veja online.",
+          "Para editar, clique no produto na lista.",
+        ],
+        dicas: [
+          "Use SKU (código) para encontrar produtos mais rápido nas vendas.",
+          "Cadastre o preço de custo para ver sua margem real nos relatórios.",
+        ],
+      }} action={
         <RoleGate action="write">
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpenCSV(true)}><Upload className="h-4 w-4 mr-2" />Importar CSV</Button>
