@@ -33,7 +33,20 @@ function Page() {
 
   return (
     <div>
-      <PageHeader title="Fluxo de caixa" action={
+      <PageHeader title="Fluxo de caixa" help={{
+        storageKey: "help.fluxo-caixa.v1",
+        oQueE: "Mostra todo dinheiro que entrou e saiu da loja — vendas, pagamentos de clientes, contas pagas e lançamentos manuais.",
+        passos: [
+          "O saldo do topo é o resultado de tudo no período escolhido.",
+          "Use o filtro de data para olhar um mês ou semana específica.",
+          "Clique em 'Novo lançamento' para registrar entrada ou saída manual.",
+          "Exporte em CSV se precisar mandar para o contador.",
+        ],
+        dicas: [
+          "Vendas aprovadas e parcelas pagas entram aqui automaticamente — não precisa digitar de novo.",
+          "Categorize bem cada lançamento para o relatório fazer sentido.",
+        ],
+      }} action={
         <RoleGate action="write"><Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Lançamento</Button></RoleGate>
       } />
       <div className="grid sm:grid-cols-3 gap-4 mb-6">

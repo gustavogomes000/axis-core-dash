@@ -73,7 +73,21 @@ function Page() {
 
   return (
     <div>
-      <PageHeader title="Configurações" subtitle="Personalize a operação do Empório" />
+      <PageHeader title="Configurações" subtitle="Personalize a operação do Empório" help={{
+        storageKey: "help.configuracoes.v1",
+        oQueE: "Onde você ajusta as regras da loja: comissão padrão, limite de desconto, prazos e as mensagens automáticas que o WhatsApp envia.",
+        passos: [
+          "Defina a comissão padrão dos vendedores (em %).",
+          "Ajuste o desconto máximo que cada vendedor pode dar sem precisar de aprovação.",
+          "Personalize as mensagens de orçamento, aprovação, cobrança, entrega e aniversário.",
+          "Use as variáveis entre chaves, ex.: {nome}, {total}, {vencimento} — são preenchidas sozinhas.",
+          "Clique em 'Salvar' no fim para aplicar.",
+        ],
+        dicas: [
+          "Mudanças aqui valem para toda a loja imediatamente.",
+          "Só usuários com papel Admin podem alterar essas configurações.",
+        ],
+      }} />
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
       ) : (

@@ -46,7 +46,20 @@ function Page() {
 
   return (
     <div>
-      <PageHeader title="Clientes" subtitle="Base de clientes do Empório" action={
+      <PageHeader title="Clientes" subtitle="Base de clientes do Empório" help={{
+        storageKey: "help.clientes.v1",
+        oQueE: "Lista de quem compra na sua loja. Aqui você guarda telefone, endereço e histórico de compras para falar com cada um pelo WhatsApp.",
+        passos: [
+          "Clique em 'Novo cliente' para cadastrar.",
+          "Nome e telefone são obrigatórios — o resto é opcional.",
+          "Na lista, clique no cliente para ver compras e parcelas em aberto.",
+          "Use o ícone do WhatsApp para mandar mensagem direto.",
+        ],
+        dicas: [
+          "Telefone com DDD garante que o link do WhatsApp funcione.",
+          "Aniversariantes do mês podem receber mensagem usando o template em Configurações.",
+        ],
+      }} action={
         <RoleGate action="write">
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpenCSV(true)}><Upload className="h-4 w-4 mr-2" />Importar CSV</Button>
