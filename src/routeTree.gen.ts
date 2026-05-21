@@ -41,6 +41,7 @@ import { Route as AuthEmporioConfiguracoesRouteImport } from './routes/_auth/emp
 import { Route as AuthEmporioComissoesRouteImport } from './routes/_auth/emporio/comissoes'
 import { Route as AuthEmporioClientesRouteImport } from './routes/_auth/emporio/clientes'
 import { Route as AuthEmporioCatalogoRouteImport } from './routes/_auth/emporio/catalogo'
+import { Route as AuthEmporioAjudaRouteImport } from './routes/_auth/emporio/ajuda'
 import { Route as AuthFactoringEmprestimosIdRouteImport } from './routes/_auth/factoring/emprestimos.$id'
 import { Route as AuthEmporioVendedorCatalogoRouteImport } from './routes/_auth/emporio/vendedor.catalogo'
 
@@ -209,6 +210,11 @@ const AuthEmporioCatalogoRoute = AuthEmporioCatalogoRouteImport.update({
   path: '/catalogo',
   getParentRoute: () => AuthEmporioRoute,
 } as any)
+const AuthEmporioAjudaRoute = AuthEmporioAjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => AuthEmporioRoute,
+} as any)
 const AuthFactoringEmprestimosIdRoute =
   AuthFactoringEmprestimosIdRouteImport.update({
     id: '/$id',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/emporio': typeof AuthEmporioRouteWithChildren
   '/factoring': typeof AuthFactoringRouteWithChildren
   '/catalogo/$slug': typeof CatalogoSlugRoute
+  '/emporio/ajuda': typeof AuthEmporioAjudaRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
   '/emporio/comissoes': typeof AuthEmporioComissoesRoute
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/selecionar-empresa': typeof SelecionarEmpresaRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
+  '/emporio/ajuda': typeof AuthEmporioAjudaRoute
   '/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/emporio/clientes': typeof AuthEmporioClientesRoute
   '/emporio/comissoes': typeof AuthEmporioComissoesRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/_auth/emporio': typeof AuthEmporioRouteWithChildren
   '/_auth/factoring': typeof AuthFactoringRouteWithChildren
   '/catalogo/$slug': typeof CatalogoSlugRoute
+  '/_auth/emporio/ajuda': typeof AuthEmporioAjudaRoute
   '/_auth/emporio/catalogo': typeof AuthEmporioCatalogoRoute
   '/_auth/emporio/clientes': typeof AuthEmporioClientesRoute
   '/_auth/emporio/comissoes': typeof AuthEmporioComissoesRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/emporio'
     | '/factoring'
     | '/catalogo/$slug'
+    | '/emporio/ajuda'
     | '/emporio/catalogo'
     | '/emporio/clientes'
     | '/emporio/comissoes'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/selecionar-empresa'
     | '/catalogo/$slug'
+    | '/emporio/ajuda'
     | '/emporio/catalogo'
     | '/emporio/clientes'
     | '/emporio/comissoes'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/_auth/emporio'
     | '/_auth/factoring'
     | '/catalogo/$slug'
+    | '/_auth/emporio/ajuda'
     | '/_auth/emporio/catalogo'
     | '/_auth/emporio/clientes'
     | '/_auth/emporio/comissoes'
@@ -670,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmporioCatalogoRouteImport
       parentRoute: typeof AuthEmporioRoute
     }
+    '/_auth/emporio/ajuda': {
+      id: '/_auth/emporio/ajuda'
+      path: '/ajuda'
+      fullPath: '/emporio/ajuda'
+      preLoaderRoute: typeof AuthEmporioAjudaRouteImport
+      parentRoute: typeof AuthEmporioRoute
+    }
     '/_auth/factoring/emprestimos/$id': {
       id: '/_auth/factoring/emprestimos/$id'
       path: '/$id'
@@ -688,6 +707,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthEmporioRouteChildren {
+  AuthEmporioAjudaRoute: typeof AuthEmporioAjudaRoute
   AuthEmporioCatalogoRoute: typeof AuthEmporioCatalogoRoute
   AuthEmporioClientesRoute: typeof AuthEmporioClientesRoute
   AuthEmporioComissoesRoute: typeof AuthEmporioComissoesRoute
@@ -706,6 +726,7 @@ interface AuthEmporioRouteChildren {
 }
 
 const AuthEmporioRouteChildren: AuthEmporioRouteChildren = {
+  AuthEmporioAjudaRoute: AuthEmporioAjudaRoute,
   AuthEmporioCatalogoRoute: AuthEmporioCatalogoRoute,
   AuthEmporioClientesRoute: AuthEmporioClientesRoute,
   AuthEmporioComissoesRoute: AuthEmporioComissoesRoute,
