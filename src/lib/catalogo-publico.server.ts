@@ -17,7 +17,7 @@ export interface CatalogoPublicoDTO {
     descricao_curta: string | null;
     preco: number | null;
     estoque: number | null;
-    imagens: unknown;
+    imagens: string[];
     destaque: boolean | null;
   }>;
 }
@@ -62,7 +62,7 @@ export async function fetchCatalogoPublicoBySlug(slug: string): Promise<Catalogo
       descricao_curta: produto.descricao_curta,
       preco: produto.preco == null ? null : Number(produto.preco),
       estoque: produto.estoque == null ? null : Number(produto.estoque),
-      imagens: produto.imagens,
+      imagens: Array.isArray(produto.imagens) ? produto.imagens.filter((img): img is string => typeof img === "string") : [],
       destaque: produto.destaque,
     })),
   };
