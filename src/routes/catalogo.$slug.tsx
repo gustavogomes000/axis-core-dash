@@ -25,28 +25,39 @@ function Page() {
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["catalogo", slug],
     queryFn: async () => {
-      const signal = AbortSignal.timeout(10_000);
-      const { data: cfg, error: cfgError } = await supabase
-        .from("config_catalogo")
-        .select("*")
-        .eq("slug", slug)
-        .eq("ativo", true)
-        .abortSignal(signal)
-        .maybeSingle();
-      if (cfgError) throw cfgError;
-      if (!cfg) return null;
-      const { data: produtos, error: produtosError } = await supabase
-        .from("produtos")
-        .select("id, nome, descricao_curta, preco, estoque, imagens, destaque, disponivel_catalogo, status")
-        .eq("empresa_id", cfg.empresa_id)
-        .eq("disponivel_catalogo", true)
-        .eq("status", "ativo")
-        .order("destaque", { ascending: false })
-        .order("nome")
-        .abortSignal(signal);
-      if (produtosError) throw produtosError;
-      return { cfg, produtos: produtos ?? [] };
+      const timeout = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("Tempo esgotado ao carregar o catálogo.")), 12_000);
+      });
+
+      return Promise.race([
+        (async () => {
+          const { data: cfg, error: cfgError } = await supabase
+            .from("config_catalogo")
+            .select("empresa_id, slug, titulo, descricao, whatsapp, instagram, facebook, mostrar_preco, mostrar_estoque")
+            .eq("slug", slug)
+            .eq("ativo", true)
+            .maybeSingle();
+
+          if (cfgError) throw cfgError;
+          if (!cfg) return null;
+
+          const { data: produtos, error: produtosError } = await supabase
+            .from("produtos")
+            .select("id, nome, descricao_curta, preco, estoque, imagens, destaque")
+            .eq("empresa_id", cfg.empresa_id)
+            .eq("disponivel_catalogo", true)
+            .eq("status", "ativo")
+            .order("destaque", { ascending: false })
+            .order("nome")
+            .limit(200);
+
+          if (produtosError) throw produtosError;
+          return { cfg, produtos: produtos ?? [] };
+        })(),
+        timeout,
+      ]);
     },
+    retry: 1,
   });
 
   if (isPending) return <div className="min-h-screen grid place-items-center text-muted-foreground">Carregando…</div>;
