@@ -38,6 +38,11 @@ function Page() {
     msg_aniversario: "",
   });
 
+  const PAPEIS = ["admin", "gerente", "operador", "vendedor", "caixa", "estoquista", "visualizador"] as const;
+  const [limites, setLimites] = useState<Record<string, number>>({
+    admin: 100, gerente: 20, operador: 10, vendedor: 5, caixa: 5, estoquista: 0, visualizador: 0,
+  });
+
   useEffect(() => {
     if (data) setF({
       whatsapp_padrao: data.whatsapp_padrao ?? "",
@@ -49,11 +54,15 @@ function Page() {
       msg_cobranca: data.msg_cobranca ?? "",
       msg_aniversario: data.msg_aniversario ?? "",
     });
+    const lim = (data as any)?.desconto_max_por_papel;
+    if (lim && typeof lim === "object") {
+      setLimites((prev) => ({ ...prev, ...lim }));
+    }
   }, [data]);
 
   const save = useMutation({
     mutationFn: async () => {
-      const payload: any = { ...f, empresa_id: empresaId };
+      const payload: any = { ...f, desconto_max_por_papel: limites, empresa_id: empresaId };
       if (data?.id) payload.id = data.id;
       const { error } = await supabase.from("config_emporio").upsert(payload);
       if (error) throw error;
@@ -83,6 +92,22 @@ function Page() {
             <div className="space-y-2"><Label>Entrega realizada</Label><Textarea rows={2} value={f.msg_entrega} onChange={(e) => setF({ ...f, msg_entrega: e.target.value })} /></div>
             <div className="space-y-2"><Label>Cobrança</Label><Textarea rows={2} value={f.msg_cobranca} onChange={(e) => setF({ ...f, msg_cobranca: e.target.value })} /></div>
             <div className="space-y-2"><Label>Aniversário</Label><Textarea rows={2} value={f.msg_aniversario} onChange={(e) => setF({ ...f, msg_aniversario: e.target.value })} /></div>
+          </CardContent></Card>
+
+          <Card><CardContent className="p-6 space-y-4">
+            <div className="text-sm font-semibold">Limites de desconto por papel (%)</div>
+            <p className="text-xs text-muted-foreground">Vendas com desconto acima do limite do papel são enviadas para aprovação do gerente.</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {PAPEIS.map((p) => (
+                <div key={p} className="space-y-2">
+                  <Label className="capitalize">{p}</Label>
+                  <Input type="number" min={0} max={100} step="0.5"
+                    value={limites[p] ?? 0}
+                    onChange={(e) => setLimites({ ...limites, [p]: Math.max(0, Math.min(100, +e.target.value || 0)) })}
+                  />
+                </div>
+              ))}
+            </div>
           </CardContent></Card>
 
           <div className="flex justify-end">
