@@ -24,7 +24,7 @@ function Page() {
   const { empresaAtiva } = useEmpresa();
   const empresaId = empresaAtiva?.id;
 
-  const { data, isLoading } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: ["config-catalogo", empresaId],
     enabled: !!empresaId,
     queryFn: async () => {
@@ -128,7 +128,7 @@ function Page() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          {isLoading ? <div className="text-muted-foreground text-sm">Carregando…</div> : (
+          {!empresaId || isFetching ? <div className="text-muted-foreground text-sm">Carregando…</div> : (
             <>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
